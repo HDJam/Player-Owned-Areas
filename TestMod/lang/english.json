@@ -1,0 +1,9 @@
+{
+	"extends": "English",
+	"dictionaries": {
+		"message": {
+			"modTestModHelloWorld": "Hello World!",
+            "modTestModNiceBranch": "Nice branch!"
+		}
+	}
+}

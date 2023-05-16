@@ -1,0 +1,13 @@
+{
+	"name": "TestMod",
+	"description": "This is a test mod!",
+	"version": "1.0.0",
+	"author": "HDJam",
+	"file": "out/Mod",
+	"languages": [
+		"lang/english"
+	],
+	"allowUnlockingMilestones": true,
+	"multiplayer":"clientside",
+	"waywardVersion": "2.11.5-beta"
+}
