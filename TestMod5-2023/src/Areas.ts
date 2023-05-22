@@ -1,5 +1,4 @@
 import Mod from "mod/Mod";
-import { IAreaData, IGlobalData, ISaveData } from "./IDataSave";
 import Player from "game/entity/player/Player";
 
 export class Area {
@@ -69,91 +68,17 @@ export default class Areas extends Mod {
         return true;
     }
 
-    /**
-     * Get the area details from the specified position
-     * @param islandId  Island Identifier 
-     * @param x         x pos
-     * @param y         y pos
-     * @returns         object TBD
-     */
-    public static getAreaData(areaId: string): Area {
-        var iArea = this.getStoredAreaData(areaId, "ID");
-        var area = new Area();
-
-        area.AreaID = iArea.AreaData.AreaID;
-        area.Claimable = iArea.AreaData.Claimable;
-        area.OwnedBy = iArea.AreaData.OwnedBy;
-
-        console.log("getAreaDetails");
-        console.log(area);
-
-        return area;
-    }
 
 
 
 
-    ////////////////////////////////////
-    // Data Storage
-    //
-
-    @Mod.saveData<Areas>()
-    public static data: ISaveData;
-    @Mod.globalData<Areas>()
-    public globalData: IGlobalData;
-
-    /**
-     * Stores data
-     * @param area Area
-     * @returns Boolean
-     */
-    public static setStoredAreaData(area: Area): boolean {
-        // initializes it if it doesn't exist
-        this.getStoredAreaData(area.AreaID, "ID");
-
-        this.data.areaData = { ID: area.AreaID, AreaData: area };
-
-        console.log("setStoredAreaData");
-        console.log(area);
-
-        return true;
-    }
 
 
-    /**
-    * Parses global data for area by key AreaID. Returns data if found.
-    * @param areaId Area ID to get.
-    * @param key The key returned by data.
-    * @returns Area obj if found
-    */
-    public static getStoredAreaData<K extends keyof IAreaData>(areaId: string, key: K): IAreaData {
-        console.log("getStoredAreaData");
-        console.log(`areaId:${areaId}; key:${key};`);
 
-        try {
-            this.data.areaData;
-        } catch (err) {
-            var areaInfo = new Area();
 
-            areaInfo.AreaID = areaId;
-            areaInfo.Claimable = true;
-            areaInfo.OwnedBy = "";
 
-            const areaData = {
-                ID: areaId,
-                AreaData: areaInfo
-            };
-            return areaData;
-        }
 
-        const areaData = this.data.areaData;
-        const data = areaData;
 
-        console.log(`areaData:${data}`);
-
-        return data;
-
-    }
 
     /**
      * Parses global data for area by key AreaID. Returns data if found.
