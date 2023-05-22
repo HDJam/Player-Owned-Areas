@@ -6,7 +6,8 @@
 		"watch": "npx tsc --build --watch --pretty --preserveWatchOutput"
 	},
 	"dependencies": {
-		"@types/node": "18.11.9"
+		"@types/node": "18.11.9",
+		"@wayward/types": "^2.13.2-beta.dev.20230516.1"
 	},
 	"devDependencies": {
 		"typescript": "5.1.0-beta",

@@ -1,0 +1,11 @@
+{
+    "extends": "English",
+    "dictionaries": {
+        "message": {
+            "ModTestMod2023Motd": "Welcome to the server!",
+            "ModTestMod2023PrevNextTileNames": "Previous tile: {0}, New tile: {1}.",
+            "ModTestMod2023TileLocation": "Tile location: {0}({1}) - x{2}, y{3}",
+            "ModTestMod2023NewAreaEntryMsg": "You have entered area (AID:{0})   |   Previous (AID:{1})"
+        }
+    }
+}
