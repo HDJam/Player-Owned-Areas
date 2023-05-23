@@ -3,11 +3,16 @@ import Player from "game/entity/player/Player";
 
 export class Area {
 
+
+    // public ID: string;
+    // public OwnedBy: string;
+    // public Claimable: boolean;
+
     private _ID: string;
-    public get AreaID(): string {
+    public get ID(): string {
         return this._ID;
     }
-    public set AreaID(v: string) {
+    public set ID(v: string) {
         this._ID = v;
     }
 
@@ -26,6 +31,7 @@ export class Area {
     public set Claimable(v: boolean) {
         this._Claimable = v;
     }
+
 
 }
 
