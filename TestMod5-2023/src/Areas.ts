@@ -36,7 +36,6 @@ export default class Areas extends Mod {
         const XID = Math.floor(player.x / 16);
         const YID = Math.floor(player.y / 16);
 
-
         const areaID = `${IID[0]}${IID[1]}${XID}${YID}`;
         return areaID;
         // this.getAreaData(areaID, XID, YID)

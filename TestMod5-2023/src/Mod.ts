@@ -38,6 +38,14 @@ export default class HelloWorld extends Mod {
     public readonly MsgAreaNotAvailable: Message;
     @Register.message("MsgUnknownCommand")
     public readonly MsgUnknownCommand: Message;
+    @Register.message("MsgAbandonAreaError")
+    public readonly MsgAbandonAreaError: Message;
+    @Register.message("MsgAbandonAreaSuccess")
+    public readonly MsgAbandonAreaSuccess: Message;
+    @Register.message("MsgAbandonAreaUnassigned")
+    public readonly MsgAbandonAreaUnassigned: Message;
+    @Register.message("MsgAbandonAreaNotOwner")
+    public readonly MsgAbandonAreaNotOwner: Message;
 
     ////////////////////////////////////
     // Overrides
@@ -150,6 +158,42 @@ export default class HelloWorld extends Mod {
         return true;
     }
 
+    /**
+    * Sets a blank area in storage
+    * @param area Area
+    * @returns Boolean
+    */
+    public delStoredAreaData(area: Area, player: Player): boolean {
+        // initializes it if it doesn't exist
+        this.getStoredAreaData(area.AreaID);
+
+        log.info(`delStoredAreaData (${localPlayer.name}: ${area.AreaID})`);
+
+        if (player.name == "" || player.name == undefined) {
+            player.messages.type(MessageType.Stat).send(this.MsgAbandonAreaUnassigned)
+            return false;
+        }
+
+        if (player.name == area.OwnedBy) {
+            try {
+                this.data.areaData[area.AreaID] = { AreaData: [area.AreaID, new Area()] };
+                player.messages.type(MessageType.Stat).send(this.MsgAbandonAreaSuccess)
+                return true;
+            }
+            catch (err) {
+                player.messages.type(MessageType.Bad).send(this.MsgAbandonAreaError)
+                log.error(err);
+                return false
+            }
+        }
+
+        if (player.name != area.OwnedBy) {
+            player.messages.type(MessageType.Bad).send(this.MsgAbandonAreaNotOwner)
+        }
+
+        return false;
+    }
+
     ////////////////////////////////////
     // Events
     //
@@ -229,7 +273,9 @@ export default class HelloWorld extends Mod {
                 this.setStoredAreaData(area);
                 break;
             case "abandon":
-                //AreaAbandon();
+                var areaId = Areas.getAreaId(player);
+                var area = this.getStoredAreaData(areaId);
+                this.delStoredAreaData(area, player);
                 break;
             default:
                 player.messages.type(MessageType.Bad).send(this.MsgUnknownCommand)
