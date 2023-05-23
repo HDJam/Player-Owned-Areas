@@ -1,8 +1,5 @@
 import Mod from "mod/Mod";
 import Player from "game/entity/player/Player";
-import Log from "utilities/Log";
-
-let log: Log;
 
 export class Area {
 
@@ -34,10 +31,10 @@ export class Area {
 
 export default class Areas extends Mod {
 
-    public static getAreaId(player: Player, x: number, y: number) {
+    public static getAreaId(player: Player) {
         const IID = player.islandId.split(",");
-        const XID = Math.floor(x / 16);
-        const YID = Math.floor(y / 16);
+        const XID = Math.floor(player.x / 16);
+        const YID = Math.floor(player.y / 16);
 
 
         const areaID = `${IID[0]}${IID[1]}${XID}${YID}`;
@@ -73,31 +70,32 @@ export default class Areas extends Mod {
 
 
     /**
-     * 
-     * @param player 
-     * @returns 
+     * Determines if the current zone the player is located at a border.
+     * @param player Player object
+     * @returns boolean
      */
     public static isAreaBorderPlayer(player: Player): boolean {
-        // Add in new param for island width.
-        // Current player island width: player.island.world.width
 
+        // Current player island width -1
+        // -1 because map index 0 and max index are unavailable to players
+        const southEastBorder = Math.floor(player.island.world.width / 16) - 1;
+
+        // Get current coordinates on island in a 16/16 "chunk" area and
+        //    identify the zone by the floor of the equasion. 
         const xID = Math.floor(player.x / 16);
         const yID = Math.floor(player.y / 16);
 
-        // 31 is border-right maximum for 512x512 island bounds
-        // TODO: Add in island bounds for future island size updates
-        if (xID == 0 || xID == 31) {
-            // localPlayer.messages.type(MessageType.Good).send(this.msgAreaBorder)
-            return false;
+        // If player is at East or West border chunk
+        if (xID == 0 || xID == southEastBorder) {
+            return true;
         }
 
-        // 31 is border-bottom maximum for 512x512 island bounds
-        if (yID == 0 || yID == 31) {
-            // localPlayer.messages.type(MessageType.Good).send(this.msgAreaBorder)
-            return false;
+        // If player is at North or South border chunk
+        if (yID == 0 || yID == southEastBorder) {
+            return true;
         }
 
-        return true;
+        return false;
     }
 
 }

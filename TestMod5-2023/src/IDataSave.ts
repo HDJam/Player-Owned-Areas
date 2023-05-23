@@ -5,7 +5,7 @@ export interface ISaveData {
     /**
      * Data for each player in this save, indexed by their IDs.
      */
-    playerData: { [key: string]: IPlayerData };
+    // playerData: { [key: string]: IPlayerData };
     areaData: { [key: string]: IAreaData };
 
 }
