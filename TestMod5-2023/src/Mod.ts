@@ -54,7 +54,9 @@ export default class HelloWorld extends Mod {
      * If the data doesn't exist or the user upgraded to a new version, we reinitialize the data.
      */
     public override initializeSaveData(data?: ISaveData) {
+
         return !this.needsUpgrade(data) ? data : {
+            areaData: {},
             playerData: {},
             lastVersion: game.modManager.getVersion(this.getIndex()),
         };
@@ -67,6 +69,7 @@ export default class HelloWorld extends Mod {
         return !this.needsUpgrade(data) ? data : {
             lastVersion: game.modManager.getVersion(this.getIndex()),
         };
+
     }
 
     public override onInitialize(): void {
@@ -107,123 +110,51 @@ export default class HelloWorld extends Mod {
     * @param key The key returned by data.
     * @returns Area obj if found
     */
-    // public getStoredAreaData(areaId: string): Area {
-    //     log.info("getStoredAreaData");
-    //     log.info(`areaId:${areaId};`);
-    //     var areaInfo = new Area();
-
-    //     try {
-    //         this.data.areaData[areaId]
-    //     } catch (err) {
-    //         areaInfo.ID = areaId;
-    //         areaInfo.Claimable = true;
-    //         areaInfo.OwnedBy = "";
-
-    //         log.info("No registered key, loading defaul area data.");
-
-    //         //const areaData = this.data.areaData;
-    //         return areaInfo;
-    //     }
-
-
-    //     // if (this.data.areaData[areaId] == undefined) {
-    //     //     areaInfo.AreaID = areaId;
-    //     //     areaInfo.Claimable = true;
-    //     //     areaInfo.OwnedBy = "";
-
-    //     //     log.info("No registered key, loading defaul area data.");
-
-    //     //     //const areaData = this.data.areaData;
-    //     //     return areaInfo;
-    //     // }
-
-    //     const areaData = this.data.areaData[areaId];
-    //     // if (areaData === undefined) {
-    //     //     areaInfo.AreaID = areaId;
-    //     //     areaInfo.Claimable = true;
-    //     //     areaInfo.OwnedBy = "";
-
-    //     //     log.info("No registered key, loading defaul area data.");
-
-    //     //     //const areaData = this.data.areaData;
-    //     //     return areaInfo;
-    //     // }
-
-    //     var data: Area = areaData.AreaData[1];
-
-    //     //areaInfo = data.AreaData[1];
-
-    //     areaInfo.ID = data.ID;
-    //     areaInfo.Claimable = data.Claimable;
-    //     areaInfo.OwnedBy = data.OwnedBy;
-
-
-    //     log.info("Data found:");
-    //     log.info(areaInfo)
-
-    //     return areaInfo;
-    // }
-    public getStoredAreaData(areaId: string): Area {
+    public getStoredAreaData<K extends keyof IAreaData>(areaId: string, key: K): IAreaData {
         log.info("getStoredAreaData");
         log.info(`areaId:${areaId};`);
         var areaInfo = new Area();
+        areaInfo.ID = areaId
 
-        // May not need try catch no more
-        // try {
-        //     this.data.areaData[areaId];
-        // } catch (err) {
-        //     areaInfo.AreaID = areaId;
-        //     areaInfo.Claimable = true;
-        //     areaInfo.OwnedBy = "";
+        const areaData = this.data.areaData;
+        const data = areaData[areaId];
+        log.warn(data);
 
-        //     //const areaData = this.data.areaData;
-        //     return areaInfo;
-        // }
-
-        if (this.data.areaData[areaId] === undefined) {
-
+        if (data) {
+            return data;
         }
 
-        const areaData = this.data.areaData[areaId];
-        if (areaData === undefined) {
-            areaInfo.ID = areaId;
-            areaInfo.Claimable = true;
-            areaInfo.OwnedBy = "";
-            log.info("No registered key, loading defaul area data.");
 
-            //const areaData = this.data.areaData;
-            return areaInfo;
-        }
-        const data = areaData;
-
-        log.info(`areaData found:${data}`);
-
-        areaInfo = data.AreaData[1];
-
-        //areaInfo.AreaID = data.AreaData[1].AreaID;
-        //areaInfo.Claimable = data.AreaData[1].Claimable;
-        //areaInfo.OwnedBy = data.AreaData[1].OwnedBy;
-
-        return data.AreaData[1];
+        log.warn("Area save data was undefined. Sending default data.")
+        return (areaData[areaId] = {
+            AreaData: new Area()
+        });
 
     }
+
     /**
     * Stores data
     * @param area Area
     * @returns Boolean
     */
-    public setStoredAreaData(area: Area): boolean {
+    public setStoredAreaData<K extends keyof IAreaData>(area: IAreaData, key: K): boolean {
         // initializes it if it doesn't exist
-        this.getStoredAreaData(area.ID);
+        // this.getStoredAreaData(area.ID);
 
-        log.info(`setStoredAreaData set info (${localPlayer.name}: ${area.ID})`);
+        log.info(`setStoredAreaData set info (${localPlayer.name}: ${area.AreaData.ID})`);
         log.info(area);
 
-        this.data.areaData[area.ID] = { AreaData: [area.ID, area] };
+        // this.globalData.areaData.AreaData[0] = area.ID;
+        // this.globalData.areaData.AreaData[1] = area;
+        // this.globalData.areaData.AreaData = [area.ID, area];
+        // this.data.areaData[area.ID] = [area.ID, area];
+        // this.data.areaData[area.ID] = area;
+        // this.data.areaData[area.ID] =  [area.ID, area];
         //this.data.areaData[area.ID] = { AreaData: [area.ID, area] };
+        this.data.areaData[area.AreaData.ID] = area;
 
         log.info("setStoredAreaData");
-        log.info(area);
+        // log.info(area);
 
         return true;
     }
@@ -233,20 +164,21 @@ export default class HelloWorld extends Mod {
     * @param area Area
     * @returns Boolean
     */
-    public delStoredAreaData(area: Area, player: Player): boolean {
+    public delStoredAreaData<K extends keyof IAreaData>(area: IAreaData, player: Player, key: K): boolean {
         // initializes it if it doesn't exist
         //this.getStoredAreaData(area.AreaID);
 
-        log.info(`delStoredAreaData (${localPlayer.name}: ${area.ID})`);
+        log.info(`delStoredAreaData (${localPlayer.name}: ${area.AreaData.ID})`);
 
         if (player.name == "" || player.name == undefined) {
             player.messages.type(MessageType.Stat).send(this.MsgAbandonAreaUnassigned)
             return false;
         }
 
-        if (player.name == area.OwnedBy) {
+        if (player.name == area.AreaData.OwnedBy) {
             try {
-                this.data.areaData[area.ID] = { AreaData: [area.ID, new Area()] };
+                //this.data.areaData[area.ID] = { AreaData: [new Area()] };
+                this.data.areaData[area.AreaData.ID].AreaData = new Area();
                 player.messages.type(MessageType.Stat).send(this.MsgAbandonAreaSuccess)
                 return true;
             }
@@ -257,7 +189,7 @@ export default class HelloWorld extends Mod {
             }
         }
 
-        if (player.name != area.OwnedBy) {
+        if (player.name != area.AreaData.OwnedBy) {
             player.messages.type(MessageType.Bad).send(this.MsgAbandonAreaNotOwner)
         }
 
@@ -278,7 +210,7 @@ export default class HelloWorld extends Mod {
     public onPlayerMove(player: Player, tile: Tile, fromTile: Tile): void {
 
 
-        this.getStoredAreaData(Areas.getAreaId(player));
+        this.getStoredAreaData(Areas.getAreaId(player), "AreaData");
 
         /*
             Area ID Mapping
@@ -347,8 +279,8 @@ export default class HelloWorld extends Mod {
                 break;
             case "abandon":
                 var areaId = Areas.getAreaId(player);
-                var area = this.getStoredAreaData(areaId);
-                this.delStoredAreaData(area, player);
+                var area = this.getStoredAreaData(areaId, "AreaData");
+                this.delStoredAreaData(area, player, "AreaData");
                 break;
             default:
                 player.messages.type(MessageType.Bad).send(this.MsgUnknownCommand)
@@ -364,17 +296,18 @@ export default class HelloWorld extends Mod {
 
     private ClaimArea(player: Player) {
         var areaId = Areas.getAreaId(player);
-        var area = this.getStoredAreaData(areaId);
+        var area = this.getStoredAreaData(areaId, "AreaData");
 
-        if (area.Claimable == true) {
-            area.Claimable = false;
-            area.OwnedBy = player.name;
+        if (area.AreaData.Claimable == true) {
+            area.AreaData.ID = areaId;
+            area.AreaData.Claimable = false;
+            area.AreaData.OwnedBy = player.name;
             log.info("Area is claimable. Attempting to store data:")
             log.info(area)
-            this.setStoredAreaData(area);
+            this.setStoredAreaData(area, "AreaData");
         }
 
-        if (area.Claimable == false) {
+        if (area.AreaData.Claimable == false) {
             player.messages.type(MessageType.Warning).send(this.MsgAreaNotAvailable);
         }
     }
@@ -403,7 +336,7 @@ export default class HelloWorld extends Mod {
 
         log.info(`Area ID: ${areaId}`);
 
-        var area: Area = this.getStoredAreaData(areaId);
+        var area = this.getStoredAreaData(areaId, "AreaData");
 
         if (!area) {
             // message user error occurred
@@ -414,7 +347,7 @@ export default class HelloWorld extends Mod {
 
         //log.info(area["_Claimable"]);
 
-        if (area.Claimable == true) {
+        if (area.AreaData.Claimable == true) {
             // message user area is available
             player.messages.type(MessageType.Good).send(this.msgLandAreaAvailable);
             log.info("Area is unclaimed!")
@@ -422,7 +355,7 @@ export default class HelloWorld extends Mod {
         }
 
         localPlayer.messages.type(MessageType.Warning).send(this.MsgAreaNotAvailable);
-        log.info(`Area is already claimed by ${area.OwnedBy}`);
+        log.info(`Area is already claimed by ${area.AreaData.OwnedBy}`);
     }
 
 
@@ -456,5 +389,9 @@ export default class HelloWorld extends Mod {
 
         return lastLoadVersion.isOlderThan(version);
     }
+
+
+
+
 }
 

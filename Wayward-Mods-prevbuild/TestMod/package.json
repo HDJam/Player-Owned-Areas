@@ -1,0 +1,6 @@
+{
+	"private": true,
+	"dependencies": {
+		"@wayward/types": "^2.11.6-beta.dev.20220403.1"
+	}
+}

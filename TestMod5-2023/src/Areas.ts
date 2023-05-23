@@ -4,33 +4,33 @@ import Player from "game/entity/player/Player";
 export class Area {
 
 
-    // public ID: string;
-    // public OwnedBy: string;
-    // public Claimable: boolean;
+    public ID: string = "0";
+    public OwnedBy: string = "";
+    public Claimable: boolean = true;
 
-    private _ID: string;
-    public get ID(): string {
-        return this._ID;
-    }
-    public set ID(v: string) {
-        this._ID = v;
-    }
+    // private _ID: string;
+    // public get ID(): string {
+    //     return this._ID;
+    // }
+    // public set ID(v: string) {
+    //     this._ID = v;
+    // }
 
-    private _OwnedBy: string = "";
-    public get OwnedBy(): string {
-        return this._OwnedBy;
-    }
-    public set OwnedBy(v: string) {
-        this._OwnedBy = v;
-    }
+    // private _OwnedBy: string = "";
+    // public get OwnedBy(): string {
+    //     return this._OwnedBy;
+    // }
+    // public set OwnedBy(v: string) {
+    //     this._OwnedBy = v;
+    // }
 
-    private _Claimable: boolean = false;
-    public get Claimable(): boolean {
-        return this._Claimable;
-    }
-    public set Claimable(v: boolean) {
-        this._Claimable = v;
-    }
+    // private _Claimable: boolean = false;
+    // public get Claimable(): boolean {
+    //     return this._Claimable;
+    // }
+    // public set Claimable(v: boolean) {
+    //     this._Claimable = v;
+    // }
 
 
 }
