@@ -5,7 +5,7 @@ export interface ISaveData {
     /**
      * Data for each player in this save, indexed by their IDs.
      */
-    //playerData: { [key: string]: IPlayerData };
+    playerData: { [key: string]: IPlayerData };
     areaData: { [key: string]: IAreaData };
 
 }
@@ -30,26 +30,31 @@ export interface IGlobalData {
     areaData: IAreaData;
 }
 
-// export interface IPlayerData {
-//     /**
-//      * Added to the player's strength
-//      */
-//     weightBonus: number;
-//     /**
-//      * Whether the player is immune to damage
-//      */
-//     invulnerable?: boolean;
-//     /**
-//      * Whether lighting is enabled
-//      */
-//     lighting?: boolean;
-//     /**
-//      * Whether the fog/field of view/fog of war is enabled
-//      */
-//     fog?: boolean;
-//     /**
-//      * Whether the player can use Debug Tools.
-//      */
-//     permissions?: boolean;
-// }
+export interface IPlayerData {
+    /**
+     * Number of areas currently claimed by user
+     */
+    claimedAreas: Number;
+
+    /**
+     * Added to the player's strength
+     */
+    weightBonus: number;
+    /**
+     * Whether the player is immune to damage
+     */
+    invulnerable?: boolean;
+    /**
+     * Whether lighting is enabled
+     */
+    lighting?: boolean;
+    /**
+     * Whether the fog/field of view/fog of war is enabled
+     */
+    fog?: boolean;
+    /**
+     * Whether the player can use Debug Tools.
+     */
+    permissions?: boolean;
+}
 

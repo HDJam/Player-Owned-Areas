@@ -7,13 +7,17 @@
             "ModTestMod2023TileLocation": "Tile location: {0}({1}) - x{2}, y{3}",
             "ModTestMod2023NewAreaEntryMsg": "You have entered area (AID:{0})   |   Previous (AID:{1})",
             "ModTestMod2023MsgAreaBorder": "Land is border of island and cannot be purchased.",
-            "ModTestMod2023MsgLandAreaAvailable": "Area is unclaimed!"
+            "ModTestMod2023MsgLandAreaAvailable": "Area is unclaimed!",
+            "ModTestMod2023MsgAreaNotAvailable": "This area is unavailable.",
+            "ModTestMod2023MsgUnknownCommand": "Unknown command. Please enter /Areas help for proper syntax."
         },
         "command": {
             "ModTestMod2023AreaCheck": "areascheck",
             "ModTestMod2023AreaBuy": "areasbuy",
             "ModTestMod2023AreaHelp": "areashelp",
-            "ModTestMod2023AreaAbandon": "areasabandon"
+            "ModTestMod2023AreaAbandon": "areasabandon",
+            "ModTestMod2023Areas": "areas",
+            "ModTestMod2023AreasAreas": "areas"
         }
     }
 }
