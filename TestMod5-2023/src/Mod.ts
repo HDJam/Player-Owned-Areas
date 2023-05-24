@@ -46,6 +46,10 @@ export default class HelloWorld extends Mod {
     public readonly MsgAbandonAreaUnassigned: Message;
     @Register.message("MsgAbandonAreaNotOwner")
     public readonly MsgAbandonAreaNotOwner: Message;
+    @Register.message("MsgAreaClaimSuccess")
+    public readonly MsgAreaClaimSuccess: Message;
+    @Register.message("MsgClaimAlreadyOwner")
+    public readonly MsgClaimAlreadyOwner: Message;
 
     ////////////////////////////////////
     // Overrides
@@ -298,18 +302,29 @@ export default class HelloWorld extends Mod {
         var areaId = Areas.getAreaId(player);
         var area = this.getStoredAreaData(areaId, "AreaData");
 
+        if (area.AreaData.OwnedBy == player.name) {
+            player.messages.type(MessageType.Warning).send(this.MsgClaimAlreadyOwner);
+            return;
+        }
+
+        if (area.AreaData.Claimable == false) {
+            player.messages.type(MessageType.Warning).send(this.MsgAreaNotAvailable, area.AreaData.OwnedBy);
+        }
+
         if (area.AreaData.Claimable == true) {
             area.AreaData.ID = areaId;
             area.AreaData.Claimable = false;
             area.AreaData.OwnedBy = player.name;
             log.info("Area is claimable. Attempting to store data:")
             log.info(area)
-            this.setStoredAreaData(area, "AreaData");
+            if (this.setStoredAreaData(area, "AreaData") === true) {
+                player.messages.type(MessageType.Stat).send(this.MsgAreaClaimSuccess);
+                return;
+            }
+
         }
 
-        if (area.AreaData.Claimable == false) {
-            player.messages.type(MessageType.Warning).send(this.MsgAreaNotAvailable);
-        }
+
     }
 
     /**
@@ -349,12 +364,12 @@ export default class HelloWorld extends Mod {
 
         if (area.AreaData.Claimable == true) {
             // message user area is available
-            player.messages.type(MessageType.Good).send(this.msgLandAreaAvailable);
+            player.messages.type(MessageType.Stat).send(this.msgLandAreaAvailable);
             log.info("Area is unclaimed!")
             return;
         }
 
-        localPlayer.messages.type(MessageType.Warning).send(this.MsgAreaNotAvailable);
+        localPlayer.messages.type(MessageType.Warning).send(this.MsgAreaNotAvailable, area.AreaData.OwnedBy);
         log.info(`Area is already claimed by ${area.AreaData.OwnedBy}`);
     }
 

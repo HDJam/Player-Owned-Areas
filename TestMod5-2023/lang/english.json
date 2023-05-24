@@ -8,12 +8,14 @@
             "ModTestMod2023NewAreaEntryMsg": "You have entered area (AID:{0})   |   Previous (AID:{1})",
             "ModTestMod2023MsgAreaBorder": "Land is border of island and cannot be purchased.",
             "ModTestMod2023MsgLandAreaAvailable": "Area is unclaimed!",
-            "ModTestMod2023MsgAreaNotAvailable": "This area is unavailable.",
+            "ModTestMod2023MsgAreaNotAvailable": "This area is unavailable. Current owner: {0}",
             "ModTestMod2023MsgUnknownCommand": "Unknown command. Please enter /Areas help for proper syntax.",
             "ModTestMod2023MsgAbandonAreaError": "Error occured in abandon area process.",
             "ModTestMod2023MsgAbandonAreaSuccess": "Area abandoned successfully.",
             "ModTestMod2023MsgAbandonAreaUnassigned": "You cannot abandon an area that is not claimed!",
-            "ModTestMod2023MsgAbandonAreaNotOwner": "You cannot abandon an area that is not yours!"
+            "ModTestMod2023MsgAbandonAreaNotOwner": "You cannot abandon an area that is not yours!",
+            "ModTestMod2023MsgAreaClaimSuccess": "Area successfully claimed!",
+            "ModTestMod2023MsgClaimAlreadyOwner": "You already own this area!"
         },
         "command": {
             "ModTestMod2023AreaCheck": "areascheck",

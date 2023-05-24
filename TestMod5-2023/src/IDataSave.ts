@@ -36,6 +36,6 @@ export interface IPlayerData {
     /**
      * Number of areas currently claimed by user
      */
-    // claimedAreas: Number;
+    claimedAreas: Number;
 }
 
