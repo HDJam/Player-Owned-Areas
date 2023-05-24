@@ -51,6 +51,14 @@ export default class HelloWorld extends Mod {
     @Register.message("MsgClaimAlreadyOwner")
     public readonly MsgClaimAlreadyOwner: Message;
 
+    // Help Messages
+
+    @Register.message("MsgHelpGeneral")
+    public readonly MsgHelpGeneral: Message;
+    @Register.message("MsgHelpCommands")
+    public readonly MsgHelpCommands: Message;
+
+
     ////////////////////////////////////
     // Overrides
     //
@@ -267,19 +275,14 @@ export default class HelloWorld extends Mod {
         switch (cmdArgs[0]) {
             case "help":
                 log.warn("Not Implimented");
-                //getAreasHelp();
+                this.GetAreasHelp(cmdArgs[1]);
                 break;
             case "check":
                 // Check area availability
                 this.checkArea(player);
                 break;
             case "claim":
-                //AreaCheckOwnership()
-                //CheckBalance()
-                //does player have maximum plot allowance?
-                //AreaBuy();
                 this.ClaimArea(player);
-
                 break;
             case "abandon":
                 var areaId = Areas.getAreaId(player);
@@ -298,7 +301,45 @@ export default class HelloWorld extends Mod {
     // Methods
     //
 
-    private ClaimArea(player: Player) {
+    private GetAreasHelp(args: string): void {
+        log.info("GetAreasHelp");
+        log.info(args);
+
+        if (args == undefined) {
+            log.info("No args received, general help")
+            // No args were passed so user passed /areas help
+
+            localPlayer.messages.type(MessageType.Stat).send(this.MsgHelpGeneral);
+            return;
+
+            // Welcome to Areas help!\n
+            // You may use \"/areas help commands\" to see command list\n
+            // You may find command specific help by entering "/areas help <command>".\n
+            // Example: /areas help check\n
+        }
+
+        switch (args) {
+            case "commands":
+                localPlayer.messages.type(MessageType.Stat).send(this.MsgHelpCommands);
+                // Some basic commands are:\n
+                // \"/areas check\", to check the plot you are on.\n
+                // \"/areas claim\", to claim the plot if available.\n
+                // \"/areas abandon\", to unclaim the land if you are the owner.
+                break;
+            case "check":
+                // Check the current location for ownership. 
+                break;
+            case "claim":
+                // Attempt to claim the current area.
+                break;
+            case "abandon":
+                // Attempt to abandon your ownership of the current area.
+                break;
+        }
+
+    }
+
+    private ClaimArea(player: Player): void {
         var areaId = Areas.getAreaId(player);
         var area = this.getStoredAreaData(areaId, "AreaData");
 

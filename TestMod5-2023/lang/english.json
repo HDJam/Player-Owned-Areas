@@ -15,7 +15,9 @@
             "ModTestMod2023MsgAbandonAreaUnassigned": "You cannot abandon an area that is not claimed!",
             "ModTestMod2023MsgAbandonAreaNotOwner": "You cannot abandon an area that is not yours!",
             "ModTestMod2023MsgAreaClaimSuccess": "Area successfully claimed!",
-            "ModTestMod2023MsgClaimAlreadyOwner": "You already own this area!"
+            "ModTestMod2023MsgClaimAlreadyOwner": "You already own this area!",
+            "ModTestMod2023MsgHelpGeneral": "Welcome to Areas help!\nYou may use \"/areas help commands\" to see command list\nYou may find command specific help by entering \"/areas help <command>\".\nExample: /areas help check",
+            "ModTestMod2023MsgHelpCommands": "Some basic commands are:\n\"/areas check\" - to check the plot you are on.\n\"/areas claim\" - to claim the plot if available.\n\"/areas abandon\" - to unclaim the land if you are the owner."
         },
         "command": {
             "ModTestMod2023AreaCheck": "areascheck",
