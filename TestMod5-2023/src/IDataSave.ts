@@ -1,4 +1,4 @@
-import { Area } from "./Areas";
+import { Area, AreaSettings } from "./Areas";
 
 export interface ISaveData {
     lastVersion: string;
@@ -14,8 +14,12 @@ export interface IAreaData {
     /**
     * Data within area
     */
-
     AreaData: Area;
+
+    /**
+     * Settings for area
+     */
+    Settings: AreaSettings;
 }
 
 export interface IGlobalData {
@@ -29,7 +33,5 @@ export interface IPlayerData {
      * Number of areas currently claimed by user
      */
     claimedAreas: Number;
-
-    InStrangerArea: boolean;
 }
 

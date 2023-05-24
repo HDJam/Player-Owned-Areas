@@ -1,5 +1,6 @@
 import Mod from "mod/Mod";
 import Player from "game/entity/player/Player";
+import Tile from "game/tile/Tile";
 
 export class Area {
 
@@ -8,6 +9,19 @@ export class Area {
     public OwnedBy: string = "";
     public Claimable: boolean = true;
 
+}
+
+export class AreaSettings {
+    /**
+     * Is the area protected?
+     */
+    isProtected: boolean = false;
+
+    /**
+     * What is the area friend list?
+     * If user is in list, allow past area protection
+     */
+    friends: Array<string>;
 }
 
 export default class Areas extends Mod {
@@ -21,6 +35,27 @@ export default class Areas extends Mod {
         const IID = player.islandId.split(",");
         const XID = Math.floor(player.x / 16);
         const YID = Math.floor(player.y / 16);
+
+        const areaID = `${IID[0]}${IID[1]}${XID}${YID}`;
+        return areaID;
+        // this.getAreaData(areaID, XID, YID)
+
+        // Debugging
+        // log.info(`fromIID=${fromIID}; fromXID=${fromXID}; fromYID=${fromYID};`);
+        // log.info(`IID=${IID}; XID=${XID}; YID=${YID};`);
+        // log.info(`fromAreaID=${fromAreaID}; areaID=${areaID}`);
+        // log.info(`X:${tile.x} Y=${tile.y} | XID:${XID} YID=${YID}`);
+    }
+
+    /**
+     * Gets the player facing tile coordinates and creates an area ID.
+     * @param player Player object
+     * @returns Area ID string
+     */
+    public static getAreaIdTile(tile: Tile): string {
+        const IID = tile.islandId.split(",");
+        const XID = Math.floor(tile.x / 16);
+        const YID = Math.floor(tile.y / 16);
 
         const areaID = `${IID[0]}${IID[1]}${XID}${YID}`;
         return areaID;

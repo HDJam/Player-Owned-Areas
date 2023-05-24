@@ -10,11 +10,9 @@ import Tile from "game/tile/Tile";
 import Player from "game/entity/player/Player";
 import { IAreaData, IGlobalData, ISaveData } from "./IDataSave";
 import Version from "./Version";
-import Areas, { Area } from "./Areas";
-import Item from "game/item/Item";
+import Areas, { Area, AreaSettings } from "./Areas";
 import { IActionApi, IActionHandlerApi, IActionUsable } from "game/entity/action/IAction";
 import Human from "game/entity/Human";
-import Jump, { IJumpCanUse } from "game/entity/action/actions/Jump";
 import Dig, { IDigTileCanUse } from "game/entity/action/actions/Dig";
 import { IInjectionApi, Inject, InjectObject, InjectionPosition } from "utilities/class/Inject";
 
@@ -134,7 +132,7 @@ export default class HelloWorld extends Mod {
 
         const areaData = this.data.areaData;
         const data = areaData[areaId];
-        log.warn(data);
+        log.info(data);
 
         if (data) {
             return data;
@@ -143,7 +141,8 @@ export default class HelloWorld extends Mod {
 
         log.warn("Area save data was undefined. Sending default data.")
         return (areaData[areaId] = {
-            AreaData: new Area()
+            AreaData: new Area(),
+            Settings: new AreaSettings()
         });
 
     }
@@ -157,6 +156,7 @@ export default class HelloWorld extends Mod {
         log.info(`setStoredAreaData set info (${localPlayer.name}: ${area.AreaData.ID})`);
         log.info(area);
 
+        // this.data.areaData[area.AreaData.ID] = area;
         this.data.areaData[area.AreaData.ID] = area;
 
         log.info("setStoredAreaData");
@@ -180,8 +180,9 @@ export default class HelloWorld extends Mod {
 
         if (player.name == area.AreaData.OwnedBy) {
             try {
-                //this.data.areaData[area.ID] = { AreaData: [new Area()] };
-                this.data.areaData[area.AreaData.ID].AreaData = new Area();
+                //this.data.areaData[area.AreaData.ID].AreaData = new Area();
+                this.data.areaData[area.AreaData.ID] = { AreaData: new Area(), Settings: new AreaSettings() };
+
                 player.messages.type(MessageType.Stat).send(this.MsgAbandonAreaSuccess)
                 return true;
             }
@@ -214,11 +215,18 @@ export default class HelloWorld extends Mod {
         //localPlayer.messages.type(MessageType.Good).send(this.messageMOTD);
     }
 
+    private CheckAreaProtected(player: Human) {
+        const areaId = Areas.getAreaIdTile(player.facingTile);
+        const playersAffectedSet = this.data.areaData[areaId].Settings // don't remember how save data works off the top of my head
+
+        //return playersAffectedSet.has(player.identifier);
+    }
+
 
     @InjectObject(Dig, "canUseHandler", InjectionPosition.Pre)
     public onCanUseActionToInjectInto(api: IInjectionApi<typeof Dig, "canUseHandler">, action: IActionHandlerApi<Human, IActionUsable>) {
 
-        if (this.data.playerData[localPlayer.name].InStrangerArea == false) {
+        if (this.data.areaData[localPlayer.identifier].Settings.isProtected == false) {
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -234,13 +242,15 @@ export default class HelloWorld extends Mod {
     public onPlayerMove(player: Player, tile: Tile, fromTile: Tile): void {
         const areaId = Areas.getAreaId(player);
         const area = this.getStoredAreaData(areaId, "AreaData")
+        log.info(area);
+        log.info(area.Settings);
 
         // If area is not player area, disable them by turning into a ghost.
         if (area.AreaData.Claimable == false && area.AreaData.OwnedBy != player.name) {
 
             // this.data.areaData[area.AreaData.ID] = area;
             // Not working
-            this.data.playerData[localPlayer.name].InStrangerArea = true;
+            log.info(this.data.areaData[areaId]);
             // player.state = 4
             //return true;
             return;
@@ -392,6 +402,9 @@ export default class HelloWorld extends Mod {
             area.AreaData.ID = areaId;
             area.AreaData.Claimable = false;
             area.AreaData.OwnedBy = player.name;
+
+            area.Settings.isProtected = true;
+
             log.info("Area is claimable. Attempting to store data:")
             log.info(area)
             if (this.setStoredAreaData(area, "AreaData") === true) {
