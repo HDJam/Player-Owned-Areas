@@ -12,7 +12,12 @@ export class Area {
 
 export default class Areas extends Mod {
 
-    public static getAreaId(player: Player) {
+    /**
+     * Gets the player's coordinates and creates an area ID.
+     * @param player Player object
+     * @returns Area ID string
+     */
+    public static getAreaId(player: Player): string {
         const IID = player.islandId.split(",");
         const XID = Math.floor(player.x / 16);
         const YID = Math.floor(player.y / 16);
@@ -27,27 +32,6 @@ export default class Areas extends Mod {
         // log.info(`fromAreaID=${fromAreaID}; areaID=${areaID}`);
         // log.info(`X:${tile.x} Y=${tile.y} | XID:${XID} YID=${YID}`);
     }
-
-    /**
-     * Check if the area is a border. Border lots are off limits for claims
-     * @param AreadID AreaID = IID XID YID
-     * @returns 
-     */
-    public static isAreaBorderCoord(xID: number, yID: number): boolean {
-        // 31 is border-right maximum for 512x512 island bounds
-        // TODO: Add in island bounds for future island size updates
-        if (xID == 0 || xID == 31) {
-            return false;
-        }
-
-        // 31 is border-bottom maximum for 512x512 island bounds
-        if (yID == 0 || yID == 31) {
-            return false;
-        }
-
-        return true;
-    }
-
 
     /**
      * Determines if the current zone the player is located at a border.

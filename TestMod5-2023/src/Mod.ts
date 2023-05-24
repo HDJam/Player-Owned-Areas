@@ -11,6 +11,12 @@ import Player from "game/entity/player/Player";
 import { IAreaData, IGlobalData, ISaveData } from "./IDataSave";
 import Version from "./Version";
 import Areas, { Area } from "./Areas";
+import Item from "game/item/Item";
+import { IActionApi, IActionHandlerApi, IActionUsable } from "game/entity/action/IAction";
+import Human from "game/entity/Human";
+import Jump, { IJumpCanUse } from "game/entity/action/actions/Jump";
+import Dig, { IDigTileCanUse } from "game/entity/action/actions/Dig";
+import { IInjectionApi, Inject, InjectObject, InjectionPosition } from "utilities/class/Inject";
 
 let log: Log;
 
@@ -197,17 +203,54 @@ export default class HelloWorld extends Mod {
     // Events
     //
 
+    // @EventHandler(Player, "preMove")
+    // public preMove(player: Player, fromTile: Tile, toTile: Tile, isMoving: boolean): undefined | boolean | void {
+
+    // }
+
     @EventHandler(GameScreen, "show")
     public onGameScreenVisible(): void {
         //log.info("onGameScreenVisible occurred!");
         //localPlayer.messages.type(MessageType.Good).send(this.messageMOTD);
     }
 
+
+    @InjectObject(Dig, "canUseHandler", InjectionPosition.Pre)
+    public onCanUseActionToInjectInto(api: IInjectionApi<typeof Dig, "canUseHandler">, action: IActionHandlerApi<Human, IActionUsable>) {
+
+        if (this.data.playerData[localPlayer.name].InStrangerArea == false) {
+            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+            api.cancelled = true; // prevent normal canuse functionality
+            return;
+        }
+        //api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+        //api.cancelled = false; // prevent normal canuse functionality
+
+    }
+
+
+
     @EventHandler(EventBus.Players, "postMove")
     public onPlayerMove(player: Player, tile: Tile, fromTile: Tile): void {
+        const areaId = Areas.getAreaId(player);
+        const area = this.getStoredAreaData(areaId, "AreaData")
 
+        // If area is not player area, disable them by turning into a ghost.
+        if (area.AreaData.Claimable == false && area.AreaData.OwnedBy != player.name) {
 
-        this.getStoredAreaData(Areas.getAreaId(player), "AreaData");
+            // this.data.areaData[area.AreaData.ID] = area;
+            // Not working
+            this.data.playerData[localPlayer.name].InStrangerArea = true;
+            // player.state = 4
+            //return true;
+            return;
+        }
+
+        // If area is not another player's area, change back to human.
+        player.state = 0
+        //return true;
+
+        //this.getStoredAreaData(area.AreaData.ID, "AreaData");
 
         /*
             Area ID Mapping
