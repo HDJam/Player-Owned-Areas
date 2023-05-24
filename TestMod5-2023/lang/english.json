@@ -17,7 +17,10 @@
             "ModTestMod2023MsgAreaClaimSuccess": "Area successfully claimed!",
             "ModTestMod2023MsgClaimAlreadyOwner": "You already own this area!",
             "ModTestMod2023MsgHelpGeneral": "Welcome to Areas help!\nYou may use \"/areas help commands\" to see command list\nYou may find command specific help by entering \"/areas help <command>\".\nExample: /areas help check",
-            "ModTestMod2023MsgHelpCommands": "Some basic commands are:\n\"/areas check\" - to check the plot you are on.\n\"/areas claim\" - to claim the plot if available.\n\"/areas abandon\" - to unclaim the land if you are the owner."
+            "ModTestMod2023MsgHelpCommands": "Some basic commands are:\n\"/areas check\" - to check the plot you are on.\n\"/areas claim\" - to claim the plot if available.\n\"/areas abandon\" - to unclaim the land if you are the owner.",
+            "ModTestMod2023MsgHelpCheck": "Check the current location for ownership.\nSyntax: /areas check",
+            "ModTestMod2023MsgHelpClaim": "Attempt to claim the current area.\nSyntax: /areas claim",
+            "ModTestMod2023MsgHelpAbandon": "Attempt to abandon your ownership of the current area.\nSyntax: /areas abandon"
         },
         "command": {
             "ModTestMod2023AreaCheck": "areascheck",

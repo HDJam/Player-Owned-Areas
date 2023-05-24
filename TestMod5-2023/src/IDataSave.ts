@@ -12,18 +12,10 @@ export interface ISaveData {
 
 export interface IAreaData {
     /**
-     * Area identifier
-     */
-    //ID: string;
+    * Data within area
+    */
 
-
-
-    /**
-     * Data within area
-     */
-    // AreaData: Area;
     AreaData: Area;
-    // AreaData: [string, Area];
 }
 
 export interface IGlobalData {

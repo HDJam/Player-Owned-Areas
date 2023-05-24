@@ -58,10 +58,17 @@ export default class HelloWorld extends Mod {
     @Register.message("MsgHelpCommands")
     public readonly MsgHelpCommands: Message;
 
+    @Register.message("MsgHelpCheck")
+    public readonly MsgHelpCheck: Message;
+    @Register.message("MsgHelpClaim")
+    public readonly MsgHelpClaim: Message;
+    @Register.message("MsgHelpAbandon")
+    public readonly MsgHelpAbandon: Message;
 
     ////////////////////////////////////
     // Overrides
     //
+
     /**
      * If the data doesn't exist or the user upgraded to a new version, we reinitialize the data.
      */
@@ -81,19 +88,10 @@ export default class HelloWorld extends Mod {
         return !this.needsUpgrade(data) ? data : {
             lastVersion: game.modManager.getVersion(this.getIndex()),
         };
-
     }
 
     public override onInitialize(): void {
         log = this.getLog();
-
-        // this.globalData.MasterAreaMap = new Map<string, Area>();
-
-        // Areas.MasterAreaMap = this.globalData.MasterAreaMap;
-        // log.info("MasterAreaArr: " + Areas.MasterAreaMap);
-    }
-
-    public override onUninitialize(): void {
     }
 
     public override onLoad(): void {
@@ -150,23 +148,12 @@ export default class HelloWorld extends Mod {
     * @returns Boolean
     */
     public setStoredAreaData<K extends keyof IAreaData>(area: IAreaData, key: K): boolean {
-        // initializes it if it doesn't exist
-        // this.getStoredAreaData(area.ID);
-
         log.info(`setStoredAreaData set info (${localPlayer.name}: ${area.AreaData.ID})`);
         log.info(area);
 
-        // this.globalData.areaData.AreaData[0] = area.ID;
-        // this.globalData.areaData.AreaData[1] = area;
-        // this.globalData.areaData.AreaData = [area.ID, area];
-        // this.data.areaData[area.ID] = [area.ID, area];
-        // this.data.areaData[area.ID] = area;
-        // this.data.areaData[area.ID] =  [area.ID, area];
-        //this.data.areaData[area.ID] = { AreaData: [area.ID, area] };
         this.data.areaData[area.AreaData.ID] = area;
 
         log.info("setStoredAreaData");
-        // log.info(area);
 
         return true;
     }
@@ -178,8 +165,6 @@ export default class HelloWorld extends Mod {
     */
     public delStoredAreaData<K extends keyof IAreaData>(area: IAreaData, player: Player, key: K): boolean {
         // initializes it if it doesn't exist
-        //this.getStoredAreaData(area.AreaID);
-
         log.info(`delStoredAreaData (${localPlayer.name}: ${area.AreaData.ID})`);
 
         if (player.name == "" || player.name == undefined) {
@@ -310,30 +295,38 @@ export default class HelloWorld extends Mod {
             // No args were passed so user passed /areas help
 
             localPlayer.messages.type(MessageType.Stat).send(this.MsgHelpGeneral);
-            return;
 
             // Welcome to Areas help!\n
             // You may use \"/areas help commands\" to see command list\n
             // You may find command specific help by entering "/areas help <command>".\n
             // Example: /areas help check\n
+            return;
+
+
         }
 
         switch (args) {
             case "commands":
                 localPlayer.messages.type(MessageType.Stat).send(this.MsgHelpCommands);
                 // Some basic commands are:\n
-                // \"/areas check\", to check the plot you are on.\n
-                // \"/areas claim\", to claim the plot if available.\n
-                // \"/areas abandon\", to unclaim the land if you are the owner.
+                // \"/areas check\", to check the plot you are on.
+                // \n\"/areas claim\", to claim the plot if available.
+                // \n\"/areas abandon\", to unclaim the land if you are the owner.
                 break;
             case "check":
+                localPlayer.messages.type(MessageType.Stat).send(this.MsgHelpCheck);
                 // Check the current location for ownership. 
+                // \nSyntax: /areas check
                 break;
             case "claim":
+                localPlayer.messages.type(MessageType.Stat).send(this.MsgHelpClaim);
                 // Attempt to claim the current area.
+                // \nSyntax: /areas claim
                 break;
             case "abandon":
+                localPlayer.messages.type(MessageType.Stat).send(this.MsgHelpAbandon);
                 // Attempt to abandon your ownership of the current area.
+                // \nSyntax: /areas abandon
                 break;
         }
 
@@ -362,10 +355,7 @@ export default class HelloWorld extends Mod {
                 player.messages.type(MessageType.Stat).send(this.MsgAreaClaimSuccess);
                 return;
             }
-
         }
-
-
     }
 
     /**
@@ -394,14 +384,11 @@ export default class HelloWorld extends Mod {
 
         var area = this.getStoredAreaData(areaId, "AreaData");
 
-        if (!area) {
+        if (area == undefined) {
             // message user error occurred
             log.warn("getStoredAreaData returned undefined!")
             return;
         }
-
-
-        //log.info(area["_Claimable"]);
 
         if (area.AreaData.Claimable == true) {
             // message user area is available
@@ -414,19 +401,6 @@ export default class HelloWorld extends Mod {
         log.info(`Area is already claimed by ${area.AreaData.OwnedBy}`);
     }
 
-
-    /**
-      * DEPRECIATED Get the area details from the specified position
-      * @param islandId  Island Identifier 
-      * @param x         x pos
-      * @param y         y pos
-      * @returns         object TBD
-      */
-    // public getAreaData(areaId: string): Area {
-    //     var iArea: Area = this.getStoredAreaData(areaId);
-
-    //     return iArea;
-    // }
 
     private needsUpgrade(data?: { lastVersion?: string }) {
         if (!data) {
