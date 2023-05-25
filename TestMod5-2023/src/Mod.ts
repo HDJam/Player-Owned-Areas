@@ -13,8 +13,12 @@ import Version from "./Version";
 import Areas, { Area, AreaSettings } from "./Areas";
 import { IActionApi, IActionHandlerApi, IActionUsable } from "game/entity/action/IAction";
 import Human from "game/entity/Human";
-import Dig, { IDigTileCanUse } from "game/entity/action/actions/Dig";
+import Dig from "game/entity/action/actions/Dig";
+import Build from "game/entity/action/actions/Build";
+import Ignite from "game/entity/action/actions/Ignite";
+import Till from "game/entity/action/actions/Till";
 import { IInjectionApi, Inject, InjectObject, InjectionPosition } from "utilities/class/Inject";
+import ToggleTilled from "game/entity/action/actions/ToggleTilled";
 
 let log: Log;
 
@@ -223,47 +227,6 @@ export default class HelloWorld extends Mod {
         //localPlayer.messages.type(MessageType.Good).send(this.messageMOTD);
     }
 
-    private CheckAreaProtected(player: Player): boolean {
-        const facingAreaId = Areas.getAreaIdTile(player.facingTile);
-        const playersAffectedSet = this.data.areaData[facingAreaId] // don't remember how save data works off the top of my head
-
-
-        // If area is not protected
-        if (playersAffectedSet.Settings.isProtected == false) {
-            log.info("Area is not protected.");
-            return false;
-        }
-
-        if (playersAffectedSet.AreaData.OwnedBy == player.name) {
-            log.info("Player owns area.");
-            return false;
-        }
-
-        log.info("Area protected, disable player functions.");
-        return true;
-
-    }
-
-
-    @InjectObject(Dig, "canUseHandler", InjectionPosition.Pre)
-    public onCanUseActionToInjectInto(api: IInjectionApi<typeof Dig, "canUseHandler">, action: IActionHandlerApi<Human, IActionUsable>) {
-        var isAreaProtected = this.CheckAreaProtected(localPlayer);
-
-        log.info(`isAreaProtected = ${isAreaProtected}`)
-        if (isAreaProtected) {
-            log.info("Dig action concealed")
-            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
-            api.cancelled = true; // prevent normal canuse functionality
-            return;
-        }
-
-        //api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
-        //api.cancelled = false; // prevent normal canuse functionality
-
-    }
-
-
-
     @EventHandler(EventBus.Players, "postMove")
     public onPlayerMove(player: Player, tile: Tile, fromTile: Tile): void {
         // Quick clean check of area:
@@ -427,6 +390,11 @@ export default class HelloWorld extends Mod {
     // Methods
     //
 
+    /**
+     * Called when '/Areas help' is called. Arguments can be passed as well using spaces between each argument.
+     * @param args Array of strings. Each position is split by a space in the command entered by the player.
+     * @returns Nothing
+     */
     private GetAreasHelp(args: string): void {
         log.info("GetAreasHelp");
         log.info(args);
@@ -442,8 +410,6 @@ export default class HelloWorld extends Mod {
             // You may find command specific help by entering "/areas help <command>".\n
             // Example: /areas help check\n
             return;
-
-
         }
 
         switch (args) {
@@ -473,6 +439,11 @@ export default class HelloWorld extends Mod {
 
     }
 
+    /**
+     * Process area claim request.
+     * @param player Current player.
+     * @returns nothing
+     */
     private ClaimArea(player: Player): void {
         var areaId = Areas.getAreaId(player);
         var area = this.getStoredAreaData(areaId, "AreaData");
@@ -565,6 +536,91 @@ export default class HelloWorld extends Mod {
     }
 
 
+    /**
+     * Checks if the area the player is facing is protected by player-owned area.
+     * True = protected; false = unprotected.
+     * @param player Current player.
+     * @returns Boolean
+     */
+    private CheckAreaProtected(player: Player): boolean {
+        const facingAreaId = Areas.getAreaIdTile(player.facingTile);
+        const playersAffectedSet = this.data.areaData[facingAreaId] // don't remember how save data works off the top of my head
+
+        // If area is not protected
+        if (playersAffectedSet.Settings.isProtected == false) {
+            log.info("Area is not protected.");
+            return false;
+        }
+
+        if (playersAffectedSet.AreaData.OwnedBy == player.name) {
+            log.info("Player owns area.");
+            return false;
+        }
+
+        log.info("Area protected, disable player functions.");
+        return true;
+
+    }
+
+    ////////////////////////////////////
+    // Areas protection Events
+    //
+
+    /**
+     * Check if dig action is allowed based on player's facing tile protection properties.
+     * @param api API to send the unusable message so the player cannot dig. Action will be allowed if facing tile is not protected.
+     * @param action 
+     * @returns 
+     */
+    @InjectObject(Dig, "canUseHandler", InjectionPosition.Pre)
+    public onCanUseActionToInjectInto(api: IInjectionApi<typeof Dig, "canUseHandler">, action: IActionHandlerApi<Human, IActionUsable>) {
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+        log.info(`isAreaProtected = ${isAreaProtected}`)
+        if (isAreaProtected) {
+            log.info("Dig action hidden")
+            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+            api.cancelled = true; // prevent normal canuse functionality
+            return;
+        }
+    }
+
+
+    @InjectObject(ToggleTilled, "canUseHandler", InjectionPosition.Pre)
+    public onCanUseTill(api: IInjectionApi<typeof ToggleTilled, "canUseHandler">, action: IActionHandlerApi<Human, IActionUsable>) {
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+        if (isAreaProtected) {
+            log.info("Till action hidden")
+            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+            api.cancelled = true; // prevent normal canuse functionality
+            return;
+        }
+    }
+
+    // @InjectObject(Ignite, "canUseHandler", InjectionPosition.Pre)
+    // public onCanUseIgnite(api: IInjectionApi<typeof Ignite, "canUseHandler">, action: IActionHandlerApi<Human, IActionUsable>) {
+    //     var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+    //     if (isAreaProtected) {
+    //         log.info("Ignite action hidden")
+    //         api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+    //         api.cancelled = true; // prevent normal canuse functionality
+    //         return;
+    //     }
+    // }
+
+    @InjectObject(Build, "canUseHandler", InjectionPosition.Pre)
+    public onCanUseBuild(api: IInjectionApi<typeof Build, "canUseHandler">, action: IActionHandlerApi<Human, IActionUsable>) {
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+        if (isAreaProtected) {
+            log.info("Build action hidden")
+            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+            api.cancelled = true; // prevent normal canuse functionality
+            return;
+        }
+    }
 
 
 }
