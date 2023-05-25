@@ -240,6 +240,7 @@ export default class HelloWorld extends Mod {
 
         log.info("Area protected, disable player functions.");
         return true;
+
     }
 
 
