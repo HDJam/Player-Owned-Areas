@@ -11,8 +11,13 @@ import Player from "game/entity/player/Player";
 import { IAreaData, IGlobalData, ISaveData } from "./IDataSave";
 import Version from "./Version";
 import Areas, { Area, AreaSettings } from "./Areas";
+import Ignite from "game/entity/action/actions/Ignite";
+import { IInjectionApi, InjectObject, InjectionPosition, Inject } from "utilities/class/Inject";
+import ToggleTilled from "game/entity/action/actions/ToggleTilled";
+
 
 // Permission Checks/Injects
+import Attack from "game/entity/action/actions/Attack";
 import Build from "game/entity/action/actions/Build";
 import Butcher from "game/entity/action/actions/Butcher";
 import Chop from "game/entity/action/actions/Chop";
@@ -24,13 +29,19 @@ import Gather from "game/entity/action/actions/Gather";
 import GatherLiquid from "game/entity/action/actions/GatherLiquid";
 import GrabAll from "game/entity/action/actions/GrabAll";
 import Harvest from "game/entity/action/actions/Harvest";
+import Melee from "game/entity/action/actions/Melee";
+import Hitch from "game/entity/action/actions/Hitch";
 import Mine from "game/entity/action/actions/Mine";
+import OpenContainer from "game/entity/action/actions/OpenContainer";
 import PickUp from "game/entity/action/actions/PickUp";
 import PickUpAllItems from "game/entity/action/actions/PickUpAllItems";
 import PickUpItem from "game/entity/action/actions/PickUpItem";
 import PlaceDown from "game/entity/action/actions/PlaceDown";
 import Pour from "game/entity/action/actions/Pour";
 import PourOnYourself from "game/entity/action/actions/PourOnYourself";
+import PropOpenDoor from "game/entity/action/actions/PropOpenDoor";
+import Release from "game/entity/action/actions/Release";
+import Ride from "game/entity/action/actions/Ride";
 import SetDown from "game/entity/action/actions/SetDown";
 import SmotherFire from "game/entity/action/actions/SmotherFire";
 import StokeFire from "game/entity/action/actions/StokeFire";
@@ -52,22 +63,24 @@ import CageCreature from "game/entity/action/actions/CageCreature";
 import Uncage from "game/entity/action/actions/Uncage";
 import PickUpExcrement from "game/entity/action/actions/PickUpExcrement";
 
-import Release from "game/entity/action/actions/Release";
-import Attack from "game/entity/action/actions/Attack";
+
+
+
 import AttachContainer from "game/entity/action/actions/AttachContainer";
-import OpenContainer from "game/entity/action/actions/OpenContainer";
+
 import CloseContainer from "game/entity/action/actions/CloseContainer";
-import Ride from "game/entity/action/actions/Ride";
-import Hitch from "game/entity/action/actions/Hitch";
-import PropOpenDoor from "game/entity/action/actions/PropOpenDoor";
+import Human from "game/entity/Human";
+import { IOptions } from "save/data/ISaveDataGlobal";
+
+
+
+
 
 
 
 
 //import ToggleProtectedItems from "game/entity/action/actions/ToggleProtectedItems";
-import Ignite from "game/entity/action/actions/Ignite";
-import { IInjectionApi, InjectObject, InjectionPosition } from "utilities/class/Inject";
-import ToggleTilled from "game/entity/action/actions/ToggleTilled";
+
 
 let log: Log;
 
@@ -1151,6 +1164,77 @@ export default class HelloWorld extends Mod {
         }
     }
 
+    @InjectObject(Melee, "canUseHandler", InjectionPosition.Pre)
+    public onCanUseMelee(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
+        if (isAreaProtected) {
+            log.info("PropOpenDoor action hidden")
+            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+            api.cancelled = true; // prevent normal canuse functionality
+            return;
+        }
+    }
+
+
+
+    /**
+     * Can player auto pickup items?
+     * @param api 
+     * @param options 
+     */
+    @Inject(Human, "setOptions", InjectionPosition.Post)
+    public onSetOptions(api: IInjectionApi<any, "setOptions">, options: IOptions) {
+        const human = api.executingInstance;
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+        log.warn(`Area protected: ${isAreaProtected} !var = ${!isAreaProtected}`);
+        options.autoPickup = !isAreaProtected;
+        options.autoPickupOnIdle = !isAreaProtected;
+
+
+
+
+        Object.defineProperty(human.options, "autoPickup", {
+            get: () => {
+                const canPickUpItems = true; // whether items can be picked up on the tile the human is on
+                return options;
+            },
+            set: () => { } // not sure whether this line is required or not
+        });
+        Object.defineProperty(human.options, "autoPickupOnIdle", {
+            get: () => {
+                const canPickUpItems = true // whether items can be picked up on the tile the human is on
+                return options;
+            },
+            set: () => { } // not sure whether this line is required or not
+        });
+
+
+        // if (isAreaProtected) {
+
+        // log.warn("Item pickup = false");
+        //return
+        // }
+
+        // log.warn("Item pickup = true");
+
+
+        // Object.defineProperty(human.options, "autoPickup", {
+        //     get: () => {
+        //         const canPickUpItems = !isAreaProtected; // whether items can be picked up on the tile the human is on
+        //         return canPickUpItems;
+        //     },
+        //     set: () => { } // not sure whether this line is required or not
+        // });
+        // Object.defineProperty(human.options, "autoPickupOnIdle", {
+        //     get: () => {
+        //         const canPickUpItems = !isAreaProtected // whether items can be picked up on the tile the human is on
+        //         return canPickUpItems;
+        //     },
+        //     set: () => { } // not sure whether this line is required or not
+        // });
+
+    }
 }
 
