@@ -11,9 +11,32 @@ import Player from "game/entity/player/Player";
 import { IAreaData, IGlobalData, ISaveData } from "./IDataSave";
 import Version from "./Version";
 import Areas, { Area, AreaSettings } from "./Areas";
-import Dig from "game/entity/action/actions/Dig";
+
+// Permission Checks/Injects
 import Build from "game/entity/action/actions/Build";
+import Butcher from "game/entity/action/actions/Butcher";
+import Chop from "game/entity/action/actions/Chop";
+import DetachContainer from "game/entity/action/actions/DetachContainer";
+import Dig from "game/entity/action/actions/Dig";
 import Drop from "game/entity/action/actions/Drop";
+import Extinguish from "game/entity/action/actions/Extinguish";
+import Gather from "game/entity/action/actions/Gather";
+import GatherLiquid from "game/entity/action/actions/GatherLiquid";
+import GrabAll from "game/entity/action/actions/GrabAll";
+import Harvest from "game/entity/action/actions/Harvest";
+import Mine from "game/entity/action/actions/Mine";
+import PickUp from "game/entity/action/actions/PickUp";
+import PickUpAllItems from "game/entity/action/actions/PickUpAllItems";
+import PickUpItem from "game/entity/action/actions/PickUpItem";
+import PlaceDown from "game/entity/action/actions/PlaceDown";
+import Pour from "game/entity/action/actions/Pour";
+import PourOnYourself from "game/entity/action/actions/PourOnYourself";
+import SetDown from "game/entity/action/actions/SetDown";
+import SmotherFire from "game/entity/action/actions/SmotherFire";
+import StokeFire from "game/entity/action/actions/StokeFire";
+import Tame from "game/entity/action/actions/Tame";
+import Throw from "game/entity/action/actions/Throw";
+import Unhitch from "game/entity/action/actions/Unhitch";
 
 
 // Untested:
@@ -21,30 +44,22 @@ import ToggleContainers from "game/entity/action/actions/ToggleContainer";
 import ToggleDoors from "game/entity/action/actions/ToggleDoor";
 import ToggleHitch from "game/entity/action/actions/ToggleHitch";
 import ToggleVehicle from "game/entity/action/actions/ToggleVehicle";
-import Butcher from "game/entity/action/actions/Butcher";
-import Chop from "game/entity/action/actions/Chop";
-import DetachContainer from "game/entity/action/actions/DetachContainer";
-import Extinguish from "game/entity/action/actions/Extinguish";
+
 import AddFuel from "game/entity/action/actions/AddFuel";
 import StartFire from "game/entity/action/actions/StartFire";
-import StokeFire from "game/entity/action/actions/StokeFire";
-import SmotherFire from "game/entity/action/actions/SmotherFire";
-import Gather from "game/entity/action/actions/Gather";
-import GatherLiquid from "game/entity/action/actions/GatherLiquid";
-import GrabAll from "game/entity/action/actions/GrabAll";
-import Harvest from "game/entity/action/actions/Harvest";
 import Lockpick from "game/entity/action/actions/Lockpick";
-import Mine from "game/entity/action/actions/Mine";
-import Tame from "game/entity/action/actions/Tame";
-import Throw from "game/entity/action/actions/Throw";
-import Unhitch from "game/entity/action/actions/Unhitch";
 import CageCreature from "game/entity/action/actions/CageCreature";
 import Uncage from "game/entity/action/actions/Uncage";
-import PickUp from "game/entity/action/actions/PickUp";
-import PickUpAllItems from "game/entity/action/actions/PickUpAllItems";
 import PickUpExcrement from "game/entity/action/actions/PickUpExcrement";
-import PickUpItem from "game/entity/action/actions/PickUpItem";
-import SetDown from "game/entity/action/actions/SetDown";
+
+import Release from "game/entity/action/actions/Release";
+import Attack from "game/entity/action/actions/Attack";
+import AttachContainer from "game/entity/action/actions/AttachContainer";
+import OpenContainer from "game/entity/action/actions/OpenContainer";
+import CloseContainer from "game/entity/action/actions/CloseContainer";
+import Ride from "game/entity/action/actions/Ride";
+import Hitch from "game/entity/action/actions/Hitch";
+import PropOpenDoor from "game/entity/action/actions/PropOpenDoor";
 
 
 
@@ -645,7 +660,7 @@ export default class HelloWorld extends Mod {
     }
 
     @InjectObject(ToggleHitch, "canUseHandler", InjectionPosition.Pre)
-    public onCanUseHitch(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
+    public onCanUseToggleHitch(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
@@ -932,6 +947,18 @@ export default class HelloWorld extends Mod {
         }
     }
 
+    @InjectObject(PlaceDown, "canUseHandler", InjectionPosition.Pre)
+    public onCanUsePlaceDown(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+        if (isAreaProtected) {
+            log.info("PlaceDown action hidden")
+            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+            api.cancelled = true; // prevent normal canuse functionality
+            return;
+        }
+    }
+
     @InjectObject(PickUp, "canUseHandler", InjectionPosition.Pre)
     public onCanUsePickUp(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
@@ -998,6 +1025,126 @@ export default class HelloWorld extends Mod {
 
         if (isAreaProtected) {
             log.info("ToggleContainers action hidden")
+            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+            api.cancelled = true; // prevent normal canuse functionality
+            return;
+        }
+    }
+
+    @InjectObject(Pour, "canUseHandler", InjectionPosition.Pre)
+    public onCanUsePour(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+        if (isAreaProtected) {
+            log.info("Pour action hidden")
+            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+            api.cancelled = true; // prevent normal canuse functionality
+            return;
+        }
+    }
+
+    @InjectObject(PourOnYourself, "canUseHandler", InjectionPosition.Pre)
+    public onCanUsePourOnYourself(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+        if (isAreaProtected) {
+            log.info("PourOnYourself action hidden")
+            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+            api.cancelled = true; // prevent normal canuse functionality
+            return;
+        }
+    }
+
+    @InjectObject(Release, "canUseHandler", InjectionPosition.Pre)
+    public onCanUseRelease(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+        if (isAreaProtected) {
+            log.info("Release action hidden")
+            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+            api.cancelled = true; // prevent normal canuse functionality
+            return;
+        }
+    }
+
+    @InjectObject(Attack, "canUseHandler", InjectionPosition.Pre)
+    public onCanUseAttack(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+        if (isAreaProtected) {
+            log.info("Attack action hidden")
+            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+            api.cancelled = true; // prevent normal canuse functionality
+            return;
+        }
+    }
+
+    @InjectObject(AttachContainer, "canUseHandler", InjectionPosition.Pre)
+    public onCanUseAttachContainer(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+        if (isAreaProtected) {
+            log.info("AttachContainer action hidden")
+            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+            api.cancelled = true; // prevent normal canuse functionality
+            return;
+        }
+    }
+
+    @InjectObject(OpenContainer, "canUseHandler", InjectionPosition.Pre)
+    public onCanUseOpenContainer(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+        if (isAreaProtected) {
+            log.info("OpenContainer action hidden")
+            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+            api.cancelled = true; // prevent normal canuse functionality
+            return;
+        }
+    }
+
+    @InjectObject(CloseContainer, "canUseHandler", InjectionPosition.Pre)
+    public onCanUseCloseContainer(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+        if (isAreaProtected) {
+            log.info("CloseContainer action hidden")
+            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+            api.cancelled = true; // prevent normal canuse functionality
+            return;
+        }
+    }
+
+    @InjectObject(Ride, "canUseHandler", InjectionPosition.Pre)
+    public onCanUseRide(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+        if (isAreaProtected) {
+            log.info("Ride action hidden")
+            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+            api.cancelled = true; // prevent normal canuse functionality
+            return;
+        }
+    }
+
+    @InjectObject(Hitch, "canUseHandler", InjectionPosition.Pre)
+    public onCanUseHitch(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+        if (isAreaProtected) {
+            log.info("Hitch action hidden")
+            api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
+            api.cancelled = true; // prevent normal canuse functionality
+            return;
+        }
+    }
+
+    @InjectObject(PropOpenDoor, "canUseHandler", InjectionPosition.Pre)
+    public onCanUsePropOpenDoor(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+        if (isAreaProtected) {
+            log.info("PropOpenDoor action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
