@@ -164,6 +164,14 @@ export default class HelloWorld extends Mod {
         return true;
     }
 
+    private delStoredAreaDataDebug(area: IAreaData) {
+        log.info("delStoredAreaDataDebug");
+        log.info(area)
+
+        this.data.areaData[area.AreaData.ID] = area;
+        log.info("Success!");
+    }
+
     /**
     * Sets a blank area in storage
     * @param area Area
@@ -215,22 +223,38 @@ export default class HelloWorld extends Mod {
         //localPlayer.messages.type(MessageType.Good).send(this.messageMOTD);
     }
 
-    private CheckAreaProtected(player: Human) {
-        const areaId = Areas.getAreaIdTile(player.facingTile);
-        const playersAffectedSet = this.data.areaData[areaId].Settings // don't remember how save data works off the top of my head
+    private CheckAreaProtected(player: Player): boolean {
+        const facingAreaId = Areas.getAreaIdTile(player.facingTile);
+        const playersAffectedSet = this.data.areaData[facingAreaId] // don't remember how save data works off the top of my head
 
-        //return playersAffectedSet.has(player.identifier);
+        // If area is not protected
+        if (playersAffectedSet.Settings.isProtected == false) {
+            log.info("Area is not protected.");
+            return false;
+        }
+
+        if (playersAffectedSet.AreaData.OwnedBy == player.name) {
+            log.info("Player owns area.");
+            return false;
+        }
+
+        log.info("Area protected, disable player functions.");
+        return true;
     }
 
 
     @InjectObject(Dig, "canUseHandler", InjectionPosition.Pre)
     public onCanUseActionToInjectInto(api: IInjectionApi<typeof Dig, "canUseHandler">, action: IActionHandlerApi<Human, IActionUsable>) {
+        var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
-        if (this.data.areaData[localPlayer.identifier].Settings.isProtected == false) {
+        log.info(`isAreaProtected = ${isAreaProtected}`)
+        if (isAreaProtected) {
+            log.info("Dig action concealed")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
         }
+
         //api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
         //api.cancelled = false; // prevent normal canuse functionality
 
@@ -240,6 +264,13 @@ export default class HelloWorld extends Mod {
 
     @EventHandler(EventBus.Players, "postMove")
     public onPlayerMove(player: Player, tile: Tile, fromTile: Tile): void {
+        // Quick clean check of area:
+        // ==========================
+        // this.CmdAreas(0, player, "check");
+        // return;
+
+        // Testing checks:
+        // ===============
         const areaId = Areas.getAreaId(player);
         const area = this.getStoredAreaData(areaId, "AreaData")
         log.info(area);
@@ -306,13 +337,13 @@ export default class HelloWorld extends Mod {
     //
 
     @Register.command("Areas")
-    public Areas(_: any, player: Player, args: string) {
+    public CmdAreas(_: any, player: Player, args: string) {
         var cmdArgs = args.split(" ");
         log.info(cmdArgs)
 
         switch (cmdArgs[0]) {
             case "help":
-                log.warn("Not Implimented");
+                //log.warn("Not Implimented");
                 this.GetAreasHelp(cmdArgs[1]);
                 break;
             case "check":
@@ -327,6 +358,10 @@ export default class HelloWorld extends Mod {
                 var area = this.getStoredAreaData(areaId, "AreaData");
                 this.delStoredAreaData(area, player, "AreaData");
                 break;
+            case "debug":
+                // Call debug functions
+                this.CmdDebug(player, cmdArgs);
+                break;
             default:
                 player.messages.type(MessageType.Bad).send(this.MsgUnknownCommand)
                 log.warn("Not Implimented");
@@ -334,6 +369,57 @@ export default class HelloWorld extends Mod {
         }
     }
 
+    /**
+     * Send debug commands here to process testing calls.
+     * @param player 
+     * @param cmdArgs 
+     */
+    private CmdDebug(player: Player, cmdArgs: Array<string>) {
+        switch (cmdArgs[1]) {
+            case "claim":
+                // /Areas debug claim <player name>
+                var areaId = Areas.getAreaId(player);
+                var area: IAreaData;
+                var areaData = this.data.areaData;
+
+                // Create new IAreaData object
+                area = (areaData[areaId] = {
+                    AreaData: new Area(),
+                    Settings: new AreaSettings()
+                });
+
+                // Set data
+                // cmdArgs[2] should be player name
+                area.AreaData.ID = areaId;
+                area.AreaData.OwnedBy = cmdArgs[2];
+                area.AreaData.Claimable = false;
+                area.Settings.isProtected = true;
+
+                // Set data
+                this.setStoredAreaData(area, "AreaData");
+                break;
+            case "abandon":
+                // /Areas debug abandon
+                var areaId = Areas.getAreaId(player);
+                // var area = this.getStoredAreaData(areaId, "AreaData");
+                // area.Settings.isProtected = false;
+
+                var area: IAreaData;
+                var areaData = this.data.areaData;
+                area = (areaData[areaId] = {
+                    AreaData: new Area(),
+                    Settings: new AreaSettings()
+                });
+
+                area.AreaData.ID = areaId;
+
+                this.delStoredAreaDataDebug(area);
+                break;
+
+        }
+
+
+    }
 
     ////////////////////////////////////
     // Methods
