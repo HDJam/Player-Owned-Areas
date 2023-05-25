@@ -227,6 +227,7 @@ export default class HelloWorld extends Mod {
         const facingAreaId = Areas.getAreaIdTile(player.facingTile);
         const playersAffectedSet = this.data.areaData[facingAreaId] // don't remember how save data works off the top of my head
 
+
         // If area is not protected
         if (playersAffectedSet.Settings.isProtected == false) {
             log.info("Area is not protected.");
