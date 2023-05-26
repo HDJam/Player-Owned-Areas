@@ -68,6 +68,7 @@ import PickUpExcrement from "game/entity/action/actions/PickUpExcrement";
 
 import AttachContainer from "game/entity/action/actions/AttachContainer";
 
+
 import CloseContainer from "game/entity/action/actions/CloseContainer";
 import Human from "game/entity/Human";
 import { IOptions } from "save/data/ISaveDataGlobal";
@@ -610,16 +611,16 @@ export default class HelloWorld extends Mod {
 
         // If area is not protected
         if (playersAffectedSet.Settings.isProtected == false) {
-            log.info("Area is not protected.");
+            log.debug("Area is not protected.");
             return false;
         }
 
         if (playersAffectedSet.AreaData.OwnedBy == player.name) {
-            log.info("Player owns area.");
+            log.debug("Player owns area.");
             return false;
         }
 
-        log.info("Area protected, disable player functions.");
+        log.debug("Area protected, disable player functions.");
         return true;
 
     }
@@ -638,9 +639,9 @@ export default class HelloWorld extends Mod {
     public onCanUseActionToInjectInto(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
-        log.info(`isAreaProtected = ${isAreaProtected}`)
+        log.debug(`isAreaProtected = ${isAreaProtected}`)
         if (isAreaProtected) {
-            log.info("Dig action hidden")
+            log.debug("Dig action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -653,7 +654,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Till action hidden")
+            log.debug("Till action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -665,7 +666,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("ToggleDoors action hidden")
+            log.debug("ToggleDoors action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -677,7 +678,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("ToggleHitch action hidden")
+            log.debug("ToggleHitch action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -689,7 +690,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Vehicle action hidden")
+            log.debug("Vehicle action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -701,7 +702,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Ignite action hidden")
+            log.debug("Ignite action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -713,7 +714,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Build action hidden")
+            log.debug("Build action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -725,7 +726,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Drop action hidden")
+            log.debug("Drop action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -737,7 +738,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Butcher action hidden")
+            log.debug("Butcher action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -749,7 +750,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Chop action hidden")
+            log.debug("Chop action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -761,7 +762,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("DetachContainer action hidden")
+            log.debug("DetachContainer action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -773,7 +774,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Extinguish action hidden")
+            log.debug("Extinguish action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -785,7 +786,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("AddFuel action hidden")
+            log.debug("AddFuel action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -797,7 +798,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("StartFire action hidden")
+            log.debug("StartFire action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -809,7 +810,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("StokeFire action hidden")
+            log.debug("StokeFire action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -821,7 +822,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("SmotherFire action hidden")
+            log.debug("SmotherFire action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -833,7 +834,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Gather action hidden")
+            log.debug("Gather action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -845,7 +846,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("GatherLiquid action hidden")
+            log.debug("GatherLiquid action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -857,7 +858,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("GrabAll action hidden")
+            log.debug("GrabAll action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -869,7 +870,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Harvest action hidden")
+            log.debug("Harvest action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -881,7 +882,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Lockpick action hidden")
+            log.debug("Lockpick action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -893,7 +894,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Mine action hidden")
+            log.debug("Mine action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -905,7 +906,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Tame action hidden")
+            log.debug("Tame action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -917,7 +918,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Throw action hidden")
+            log.debug("Throw action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -929,7 +930,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Unhitch action hidden")
+            log.debug("Unhitch action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -941,7 +942,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("CageCreature action hidden")
+            log.debug("CageCreature action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -953,7 +954,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Uncage action hidden")
+            log.debug("Uncage action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -965,7 +966,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("PlaceDown action hidden")
+            log.debug("PlaceDown action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -977,7 +978,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("PickUp action hidden")
+            log.debug("PickUp action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -989,7 +990,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("PickUpAllItems action hidden")
+            log.debug("PickUpAllItems action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -1001,7 +1002,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("PickUpExcrement action hidden")
+            log.debug("PickUpExcrement action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -1013,7 +1014,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("PickUpItem action hidden")
+            log.debug("PickUpItem action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -1025,7 +1026,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("SetDown action hidden")
+            log.debug("SetDown action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -1037,7 +1038,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("ToggleContainers action hidden")
+            log.debug("ToggleContainers action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -1049,7 +1050,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Pour action hidden")
+            log.debug("Pour action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -1061,7 +1062,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("PourOnYourself action hidden")
+            log.debug("PourOnYourself action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -1073,7 +1074,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Release action hidden")
+            log.debug("Release action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -1085,7 +1086,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Attack action hidden")
+            log.debug("Attack action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -1097,7 +1098,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("AttachContainer action hidden")
+            log.debug("AttachContainer action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -1109,7 +1110,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("OpenContainer action hidden")
+            log.debug("OpenContainer action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -1121,7 +1122,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("CloseContainer action hidden")
+            log.debug("CloseContainer action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -1133,7 +1134,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Ride action hidden")
+            log.debug("Ride action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -1145,7 +1146,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("Hitch action hidden")
+            log.debug("Hitch action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -1157,7 +1158,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("PropOpenDoor action hidden")
+            log.debug("PropOpenDoor action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -1169,7 +1170,7 @@ export default class HelloWorld extends Mod {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
         if (isAreaProtected) {
-            log.info("PropOpenDoor action hidden")
+            log.debug("PropOpenDoor action hidden")
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
             return;
@@ -1184,31 +1185,54 @@ export default class HelloWorld extends Mod {
      * @param options 
      */
     @Inject(Human, "setOptions", InjectionPosition.Post)
-    public onSetOptions(api: IInjectionApi<any, "setOptions">, options: IOptions) {
+    public onSetPickupItemsOptions(api: IInjectionApi<any, "setOptions">, options: IOptions) {
+        log.info("onSetPickupItemsOptions");
+
         const human = api.executingInstance;
-        var isAreaProtected = this.CheckAreaProtected(localPlayer);
 
-        log.warn(`Area protected: ${isAreaProtected} !var = ${!isAreaProtected}`);
-        options.autoPickup = !isAreaProtected;
-        options.autoPickupOnIdle = !isAreaProtected;
+        // If user auto pickup is enabled, disable temporarily
+        if (human.options.autoPickup)
+            Object.defineProperty(human.options, "autoPickup", {
+                get: () => {
+                    var isAreaProtected = this.CheckAreaProtected(localPlayer);
+                    log.info(`Area protected: ${isAreaProtected}`);
+
+                    if (isAreaProtected === true) {
+                        log.info("Set canPickUpItems = false");
+                        const canPickUpItems = false; // whether items can be picked up on the tile the human is on
+                        return canPickUpItems;
+                    }
+
+                    log.info("Set canPickUpItems = true");
+                    const canPickUpItems = true; // whether items can be picked up on the tile the human is on
+                    return canPickUpItems;
+                },
+                set: () => { return options.autoPickup } // not sure whether this line is required or not
+            });
+
+        // If user auto pickup is enabled, re-enable it temporarily
+        if (human.options.autoPickupOnIdle)
+            Object.defineProperty(human.options, "autoPickupOnIdle", {
+                get: () => {
+                    var isAreaProtected = this.CheckAreaProtected(localPlayer);
+                    log.info(`Area protected: ${isAreaProtected}`);
+
+                    if (isAreaProtected === true) {
+                        log.info("Set canPickupOnIdle = false")
+                        const canPickUpItems = false; // whether items can be picked up on the tile the human is on
+                        return canPickUpItems;
+                    }
+
+                    log.info("Set canPickupOnIdle = true")
+                    const canPickUpItems = true; // whether items can be picked up on the tile the human is on
+                    return canPickUpItems;
+                },
+                set: () => { return options.autoPickupOnIdle; } // not sure whether this line is required or not
+            });
+
+        return;
 
 
-
-
-        Object.defineProperty(human.options, "autoPickup", {
-            get: () => {
-                const canPickUpItems = true; // whether items can be picked up on the tile the human is on
-                return options;
-            },
-            set: () => { } // not sure whether this line is required or not
-        });
-        Object.defineProperty(human.options, "autoPickupOnIdle", {
-            get: () => {
-                const canPickUpItems = true // whether items can be picked up on the tile the human is on
-                return options;
-            },
-            set: () => { } // not sure whether this line is required or not
-        });
 
 
         // if (isAreaProtected) {
