@@ -22,16 +22,17 @@ export interface IAreaData {
     Settings: AreaSettings;
 }
 
+export interface IPlayerData {
+    /**
+     * Number of areas currently claimed by user
+     */
+    ID: string;
+    Name: string;
+    ClaimedAreas: number;
+}
+
 export interface IGlobalData {
     lastVersion: string;
     //areaData: { [key: string]: IAreaData };
     areaData: IAreaData;
 }
-
-export interface IPlayerData {
-    /**
-     * Number of areas currently claimed by user
-     */
-    claimedAreas: Number;
-}
-

@@ -8,13 +8,14 @@ import { EventHandler } from "event/EventManager";
 import { EventBus } from "event/EventBuses";
 import Tile from "game/tile/Tile";
 import Player from "game/entity/player/Player";
-import { IAreaData, IGlobalData, ISaveData } from "./IDataSave";
+import { IAreaData, IGlobalData, IPlayerData, ISaveData } from "./IDataSave";
 import Version from "./Version";
 import Areas, { Area, AreaSettings } from "./Areas";
 import Ignite from "game/entity/action/actions/Ignite";
 import { IInjectionApi, InjectObject, InjectionPosition, Inject } from "utilities/class/Inject";
 import ToggleTilled from "game/entity/action/actions/ToggleTilled";
-
+import Human from "game/entity/Human";
+import { IOptions } from "save/data/ISaveDataGlobal";
 
 // Permission Checks/Injects
 import Attack from "game/entity/action/actions/Attack";
@@ -63,31 +64,20 @@ import CageCreature from "game/entity/action/actions/CageCreature";
 import Uncage from "game/entity/action/actions/Uncage";
 import PickUpExcrement from "game/entity/action/actions/PickUpExcrement";
 
-
-
-
 import AttachContainer from "game/entity/action/actions/AttachContainer";
 
-
 import CloseContainer from "game/entity/action/actions/CloseContainer";
-import Human from "game/entity/Human";
-import { IOptions } from "save/data/ISaveDataGlobal";
-
-
-
-
-
-
 
 
 //import ToggleProtectedItems from "game/entity/action/actions/ToggleProtectedItems";
-
+export class ModSettings {
+    public static readonly MAX_CLAIMED_AREA = 16
+    public static readonly ADMIN_PLAYERS = ["hdjam", "someguy"]
+}
 
 let log: Log;
 
 export default class HelloWorld extends Mod {
-    public readonly MAX_CLAIMED_AREA = 16
-
 
     ////////////////////////////////////
     // Messages
@@ -121,6 +111,16 @@ export default class HelloWorld extends Mod {
     public readonly MsgAreaClaimSuccess: Message;
     @Register.message("MsgClaimAlreadyOwner")
     public readonly MsgClaimAlreadyOwner: Message;
+    @Register.message("MsgAreaLimitHit")
+    public readonly MsgAreaLimitHit: Message;
+    @Register.message("MsgAreaCount")
+    public readonly MsgAreaCount: Message;
+    @Register.message("MsgNotEnoughPermissions")
+    public readonly MsgNotEnoughPermissions: Message
+    @Register.message("MsgGetPlayerAreaDetails")
+    public readonly MsgGetPlayerAreaDetails: Message
+    @Register.message("MsgGetPlayerDetails")
+    public readonly MsgGetPlayerDetails: Message
 
     // Help Messages
 
@@ -183,10 +183,51 @@ export default class HelloWorld extends Mod {
     @Mod.globalData<Mod>()
     public globalData: IGlobalData;
 
-    public blockedAreasStorage: [string, Area];
+    private GetStoredDataByPlayerName(targetPlayer: Player, player: Player) {
+        const data = this.data;
+        const playerData = data.playerData[targetPlayer.identifier];
+        var PlayerAreas = new Array<Area>;
+
+        for (var index in data.areaData) {
+            if (data.areaData[index].AreaData.OwnedBy == targetPlayer.name) {
+                PlayerAreas.push(data.areaData[index].AreaData);
+            }
+            log.info(index);
+        }
+
+        // log.info("---");
+        // log.info(data);
+        // log.info("---");
+        // log.info(areaData);
+        log.info("---");
+        log.info(playerData);
+        log.info("---");
+        log.info(PlayerAreas);
+        log.info("---");
+
+        var AreaMsgStr = this.FormatMsgPlayerAreas(PlayerAreas);
+
+        // Output result to admin chat menu
+        if (playerData) {
+            player.messages.type(MessageType.Warning).send(this.MsgGetPlayerDetails, playerData.ID, playerData.Name, playerData.ClaimedAreas);
+        }
+
+        if (AreaMsgStr) {
+            player.messages.type(MessageType.Warning).send(this.MsgGetPlayerAreaDetails, AreaMsgStr);
+        }
+
+        /*
+                    Player Details:\n
+                    ID: {0}\n
+                    Name: {1}\n
+                    Claimed Areas: {2}
+                */
+
+        return;
+    }
 
     /**
-    * Parses global data for area by key AreaID. Returns data if found.
+    * Parses data for area by key AreaID. Returns data if found.
     * @param areaId Area ID to get.
     * @param key The key returned by data.
     * @returns Area obj if found
@@ -199,12 +240,10 @@ export default class HelloWorld extends Mod {
 
         const areaData = this.data.areaData;
         const data = areaData[areaId];
-        log.info(data);
 
         if (data) {
             return data;
         }
-
 
         log.warn("Area save data was undefined. Sending default data.")
         return (areaData[areaId] = {
@@ -215,7 +254,7 @@ export default class HelloWorld extends Mod {
     }
 
     /**
-    * Stores data
+    * Stores area data by area ID
     * @param area Area
     * @returns Boolean
     */
@@ -259,6 +298,7 @@ export default class HelloWorld extends Mod {
                 this.data.areaData[area.AreaData.ID] = { AreaData: new Area(), Settings: new AreaSettings() };
 
                 player.messages.type(MessageType.Stat).send(this.MsgAbandonAreaSuccess)
+                this.AddAreaCount(player, -1);
                 return true;
             }
             catch (err) {
@@ -316,7 +356,7 @@ export default class HelloWorld extends Mod {
         }
 
         // If area is not another player's area, change back to human.
-        player.state = 0
+        //player.state = 0
         //return true;
 
         //this.getStoredAreaData(area.AreaData.ID, "AreaData");
@@ -366,17 +406,23 @@ export default class HelloWorld extends Mod {
 
     @Register.command("Areas")
     public CmdAreas(_: any, player: Player, args: string) {
+        log.info("Command received!");
+
         var cmdArgs = args.split(" ");
-        log.info(cmdArgs)
+        log.info(cmdArgs);
+
 
         switch (cmdArgs[0]) {
             case "help":
-                //log.warn("Not Implimented");
                 this.GetAreasHelp(cmdArgs[1]);
                 break;
             case "check":
                 // Check area availability
                 this.checkArea(player);
+                break;
+            case "count":
+                const areaCount = this.GetAreaCount(player);
+                player.messages.type(MessageType.Good).send(this.MsgAreaCount, areaCount, ModSettings.MAX_CLAIMED_AREA)
                 break;
             case "claim":
                 this.ClaimArea(player);
@@ -388,10 +434,49 @@ export default class HelloWorld extends Mod {
                 break;
             case "debug":
                 // Call debug functions
-                this.CmdDebug(player, cmdArgs);
+                if (this.IsUserAdmin(player.name)) {
+                    this.CmdDebug(player, cmdArgs);
+                }
+                break;
+            case "admin":
+                if (this.IsUserAdmin(player.name)) {
+                    this.CmdAdmin(player, cmdArgs);
+                    return;
+                }
+
+                player.messages.type(MessageType.Bad).send(this.MsgNotEnoughPermissions);
                 break;
             default:
-                player.messages.type(MessageType.Bad).send(this.MsgUnknownCommand)
+                player.messages.type(MessageType.Bad).send(this.MsgUnknownCommand);
+                log.warn("Not Implimented");
+                break;
+        }
+    }
+
+    private CmdAdmin(player: Player, cmdArgs: Array<string>) {
+        switch (cmdArgs[1]) {
+            case "GetPlayerData":
+                // Ensure admin command sub-parameter is set
+                if (cmdArgs[2] == undefined || cmdArgs[2].trim() == "") {
+                    log.warn("Enter a valid player name!");
+                    return;
+                }
+
+                var targetPlayer = game.playerManager.getByName(cmdArgs[2]);
+
+                if (targetPlayer == undefined) {
+                    log.warn(`User ${cmdArgs[2]} does not exist!`);
+                    return;
+                }
+
+                log.info(`User ${[cmdArgs[2]]} exists!`);
+                var result = this.GetStoredDataByPlayerName(targetPlayer, player);
+
+                log.info(result);
+
+                break;
+            default:
+                player.messages.type(MessageType.Bad).send(this.MsgUnknownCommand);
                 log.warn("Not Implimented");
                 break;
         }
@@ -443,10 +528,23 @@ export default class HelloWorld extends Mod {
 
                 this.delStoredAreaDataDebug(area);
                 break;
+            case "reinit":
+                const playerName = cmdArgs[2]
+                if (playerName == undefined || playerName.trim() == "") {
+                    log.info("Enter a player ID! Syntax: /areas debug reinit <player name>")
+                    return;
+                }
 
+                var targetPlayer = game.playerManager.getByName(playerName);
+
+                if (targetPlayer == undefined) {
+                    log.info("Player information not found.")
+                    return;
+                }
+
+                this.InitPlayerData(targetPlayer, "playerData");
+                break;
         }
-
-
     }
 
     ////////////////////////////////////
@@ -508,6 +606,14 @@ export default class HelloWorld extends Mod {
      * @returns nothing
      */
     private ClaimArea(player: Player): void {
+        const limit = this.CheckPlayerAreaLimit(player);
+
+        if (limit == true) {
+            player.messages.type(MessageType.Warning).send(this.MsgAreaLimitHit, ModSettings.MAX_CLAIMED_AREA)
+            return;
+        }
+
+
         var areaId = Areas.getAreaId(player);
         var area = this.getStoredAreaData(areaId, "AreaData");
 
@@ -531,6 +637,7 @@ export default class HelloWorld extends Mod {
             log.info(area)
             if (this.setStoredAreaData(area, "AreaData") === true) {
                 player.messages.type(MessageType.Stat).send(this.MsgAreaClaimSuccess);
+                this.AddAreaCount(player, 1);
                 return;
             }
         }
@@ -607,7 +714,16 @@ export default class HelloWorld extends Mod {
      */
     private CheckAreaProtected(player: Player): boolean {
         const facingAreaId = Areas.getAreaIdTile(player.facingTile);
-        const playersAffectedSet = this.data.areaData[facingAreaId] // don't remember how save data works off the top of my head
+        var playersAffectedSet = this.data.areaData[facingAreaId] // don't remember how save data works off the top of my head
+
+        // Initialize data if not existing
+        if (playersAffectedSet == undefined) {
+            log.warn("Area save data was undefined. Creating new data.");
+            (playersAffectedSet = {
+                AreaData: new Area(),
+                Settings: new AreaSettings()
+            });
+        }
 
         // If area is not protected
         if (playersAffectedSet.Settings.isProtected == false) {
@@ -622,8 +738,149 @@ export default class HelloWorld extends Mod {
 
         log.debug("Area protected, disable player functions.");
         return true;
-
     }
+
+    /**
+     * Initialize player data if it does not exist
+     * @param player Player object
+     * @param key PlayerData
+     * @returns number
+     */
+    private InitPlayerData<K extends keyof ISaveData>(player: Player, key: K): IPlayerData | void {
+        log.info("InitPlayerData");
+        log.info("Initializing new player data!");
+        var pdata = this.data.playerData;
+        return pdata[player.identifier] = {
+            ID: player.identifier,
+            Name: player.name,
+            ClaimedAreas: 0
+        };
+    }
+
+    /**
+     * Gets the current stored area count for player
+     * @param player Player object
+     * @returns Number or 0 if no areas existed
+     */
+    public GetAreaCount(player: Player): number {
+        log.info("GetAreaCount");
+        const playerData = this.data.playerData;
+        const data = playerData[player.identifier];
+
+
+        // If data exists
+        if (data) {
+            log.info("Data existed!");
+            // Return claimed area count
+            return data.ClaimedAreas;
+        }
+
+        log.info("Data didn't exist!");
+        // If data didnt exist, create it.
+        this.InitPlayerData(player, "playerData");
+
+        // Return 0 as new players never have claimed areas by default
+        return 0;
+    }
+
+    /**
+     * Checks player area limit. If no limit exists, data is created and 0 is returned.
+     * @param player Pass the player data
+     * @returns 
+     */
+    public CheckPlayerAreaLimit(player: Player): boolean {
+        log.info("CheckPlayerAreaLimit");
+        const playerData = this.data.playerData;
+        const data = playerData[player.identifier];
+
+        // If data exists
+        if (data) {
+            log.info("Data existed!");
+            // Check if areas is at or higher than limit
+            if (data.ClaimedAreas >= ModSettings.MAX_CLAIMED_AREA) {
+                log.info(`Player has max areas claimed! ${data.ClaimedAreas}/${ModSettings.MAX_CLAIMED_AREA}`);
+                return true;
+            }
+
+            log.info(`Player not at max areas claimed. ${data.ClaimedAreas}/${ModSettings.MAX_CLAIMED_AREA}`);
+            // If limit or higher not met
+            return false;
+        }
+
+        log.info("Data did not exist.")
+        // If data didnt exist, create it.
+        this.InitPlayerData(player, "playerData");
+
+        // Return false as new user will never have limit
+        return false;
+    }
+
+    /**
+ * 
+ * @param player Player Data
+ * @param num Send 1 or -1 to add or remove 1
+ * @returns Nothing
+ */
+    public AddAreaCount(player: Player, num: number) {
+        log.info("AddAreaCount");
+        const playerData = this.data.playerData;
+        const data = playerData[player.identifier];
+
+        // If data exists, increment claimedAreas and store
+        if (data) {
+            log.info("Data existed!");
+            data.ClaimedAreas += num;
+            playerData[player.identifier] = data;
+            return;
+        }
+
+        log.info("Data didn't exist.");
+
+        // Init player data since didnt exist
+        var newData = this.InitPlayerData(player, "playerData");
+
+        // If data exists, increadse area count
+        if (newData) {
+            newData.ClaimedAreas++;
+            playerData[player.identifier] = newData;
+        }
+
+        return;
+    }
+
+    /**
+     * Check if user is an administrative user
+     * @param name 
+     * @returns boolean
+     */
+    private IsUserAdmin(name: string): boolean {
+        var admins = ModSettings.ADMIN_PLAYERS;
+
+        log.warn("User Admin Check");
+        log.info(admins);
+
+        if (admins.includes(name.toLowerCase())) {
+            log.info("User is an administrator!");
+            return true;
+        }
+
+        log.info("User is NOT an administrator!");
+        return false;
+    }
+
+    private FormatMsgPlayerAreas(data: Area[]): string {
+        var message = "";
+        for (var index in data) {
+            message += `${data[index].ID}\n`
+        }
+
+        /*
+            Claimed Areas:\n
+            {0}
+         */
+        return message;
+    }
+
 
     ////////////////////////////////////
     // Areas protection Events
@@ -1177,8 +1434,6 @@ export default class HelloWorld extends Mod {
         }
     }
 
-
-
     /**
      * Can player auto pickup items?
      * @param api 
@@ -1229,36 +1484,7 @@ export default class HelloWorld extends Mod {
                 },
                 set: () => { return options.autoPickupOnIdle; } // not sure whether this line is required or not
             });
-
         return;
-
-
-
-
-        // if (isAreaProtected) {
-
-        // log.warn("Item pickup = false");
-        //return
-        // }
-
-        // log.warn("Item pickup = true");
-
-
-        // Object.defineProperty(human.options, "autoPickup", {
-        //     get: () => {
-        //         const canPickUpItems = !isAreaProtected; // whether items can be picked up on the tile the human is on
-        //         return canPickUpItems;
-        //     },
-        //     set: () => { } // not sure whether this line is required or not
-        // });
-        // Object.defineProperty(human.options, "autoPickupOnIdle", {
-        //     get: () => {
-        //         const canPickUpItems = !isAreaProtected // whether items can be picked up on the tile the human is on
-        //         return canPickUpItems;
-        //     },
-        //     set: () => { } // not sure whether this line is required or not
-        // });
-
     }
 }
 
