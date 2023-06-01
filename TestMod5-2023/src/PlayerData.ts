@@ -1,7 +1,7 @@
 import Player from "game/entity/player/Player";
 import { ISaveData } from "./IDataSave";
 import Mod from "mod/Mod";
-import { ModSettings } from "./Mod";
+import { ModSettings } from "./ModSettings";
 
 export class PlayerSaveData {
     public ID: string;

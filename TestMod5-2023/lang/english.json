@@ -2,6 +2,7 @@
     "extends": "English",
     "dictionaries": {
         "message": {
+            "AreasAreasMotd": "Welcome to the server!",
             "ModPlayerOwnedAreasMotd": "Welcome to the server!",
             "ModPlayerOwnedAreasPrevNextTileNames": "Previous tile: {0}, New tile: {1}.",
             "ModPlayerOwnedAreasTileLocation": "Tile location: {0}({1}) - x{2}, y{3}",
@@ -37,6 +38,7 @@
             "ModPlayerOwnedAreasMsgFlushFailure": "Failure occurred when flushing {0}'s data.",
             "ModPlayerOwnedAreasMsgCmdPlayerMissing": "Enter a valid player name.",
             "ModPlayerOwnedAreasMsgCmdFriendSubCommandMissing": "Enter a sub-command! Syntax: /areas friends <add|remove> <player name>",
+            "ModPlayerOwnedAreasMsgAreaCheckIsFriend": "You have permissions in this area.",
             "ModPlayerOwnedAreas": ""
         },
         "command": {

@@ -3,19 +3,19 @@ import Register from "mod/ModRegistry";
 import Mod from "mod/Mod";
 import Log from "utilities/Log";
 import Message from "language/dictionary/Message";
-import GameScreen from "ui/screen/screens/GameScreen";
 import { EventHandler } from "event/EventManager";
 import { EventBus } from "event/EventBuses";
 import Tile from "game/tile/Tile";
 import Player from "game/entity/player/Player";
 import { IAreaData, IGlobalData, IPlayerData, ISaveData } from "./IDataSave";
 import Version from "./Version";
-import Areas, { Area, AreaSettings } from "./Areas";
+import { Area, AreaSettings, Areas } from "./Areas";
 import Ignite from "game/entity/action/actions/Ignite";
 import { IInjectionApi, InjectObject, InjectionPosition, Inject } from "utilities/class/Inject";
 import ToggleTilled from "game/entity/action/actions/ToggleTilled";
 import Human from "game/entity/Human";
 import { IOptions } from "save/data/ISaveDataGlobal";
+import { ModSettings } from "./ModSettings";
 
 // Permission Checks/Injects
 import Attack from "game/entity/action/actions/Attack";
@@ -65,13 +65,10 @@ import Uncage from "game/entity/action/actions/Uncage";
 import PickUpExcrement from "game/entity/action/actions/PickUpExcrement";
 import AttachContainer from "game/entity/action/actions/AttachContainer";
 import CloseContainer from "game/entity/action/actions/CloseContainer";
+import { LogTest } from "./Areas"
 
 
 //import ToggleProtectedItems from "game/entity/action/actions/ToggleProtectedItems";
-export class ModSettings {
-    public static readonly MAX_CLAIMED_AREA = 16
-    public static readonly ADMIN_PLAYERS = ["hdjam", "someguy"]
-}
 
 let log: Log;
 
@@ -144,6 +141,8 @@ export default class Main extends Mod {
     @Register.message("MsgCmdFriendSubCommandMissing")
     public readonly MsgCmdFriendSubCommandMissing: Message
 
+    @Register.message("MsgAreaCheckIsFriend")
+    public readonly MsgAreaCheckIsFriend: Message
 
     // Help Messages
 
@@ -167,7 +166,6 @@ export default class Main extends Mod {
      * If the data doesn't exist or the user upgraded to a new version, we reinitialize the data.
      */
     public override initializeSaveData(data?: ISaveData) {
-
         return !this.needsUpgrade(data) ? data : {
             areaData: {},
             playerData: {},
@@ -224,11 +222,13 @@ export default class Main extends Mod {
     }
 
     private GetPlayerDataById(targetPlayerId: string): IPlayerData | undefined {
+        log.debug("GetPlayerDataById");
         const data = this.data;
         return data.playerData[targetPlayerId];
     }
 
     private PrintStoredDataByPlayerName(targetPlayer: Player, player: Player) {
+        log.debug("PrintStoredDataByPlayerName");
         const data = this.data;
         const playerData = this.GetPlayerDataById(targetPlayer.identifier);
         var PlayerAreaIDs = this.GetAreaDataByPlayerName(targetPlayer.name);
@@ -237,19 +237,13 @@ export default class Main extends Mod {
             if (data.areaData[index].AreaData.OwnedBy == targetPlayer.name) {
                 PlayerAreaIDs.push(data.areaData[index].AreaData.ID);
             }
-            log.info(index);
         }
 
-
-        // log.info("---");
-        // log.info(data);
-        // log.info("---");
-        // log.info(areaData);
-        log.info("---");
-        log.info(playerData);
-        log.info("---");
-        log.info(PlayerAreaIDs);
-        log.info("---");
+        log.debug("---");
+        log.debug(playerData);
+        log.debug("---");
+        log.debug(PlayerAreaIDs);
+        log.debug("---");
 
         var AreaMsgStr = this.FormatMsgPlayerAreaIDs(PlayerAreaIDs);
 
@@ -278,25 +272,22 @@ export default class Main extends Mod {
     * @param key The key returned by data.
     * @returns Area obj if found
     */
-    public getStoredAreaData<K extends keyof IAreaData>(areaId: string, key: K): IAreaData {
+    public GetAreaData(areaId: string): IAreaData {
         log.info("getStoredAreaData");
-        log.info(`areaId:${areaId};`);
+        log.info(`areaId: ${areaId};`);
         var areaInfo = new Area();
         areaInfo.ID = areaId
 
-        const areaData = this.data.areaData;
-        const data = areaData[areaId];
+        const data = this.data.areaData[areaId];
+        //const data = areaData[areaId];
 
         if (data) {
             return data;
         }
 
         log.warn("Area save data was undefined. Sending default data.")
-        return (areaData[areaId] = {
-            AreaData: new Area(),
-            Settings: new AreaSettings()
-        });
 
+        return this.InitAreaData(areaId)
     }
 
     /**
@@ -304,20 +295,28 @@ export default class Main extends Mod {
     * @param area Area
     * @returns Boolean
     */
-    public setStoredAreaData<K extends keyof IAreaData>(area: IAreaData, key: K): boolean {
+    public SetAreaData(area: IAreaData): boolean {
         log.info(`setStoredAreaData set info (${localPlayer.name}: ${area.AreaData.ID})`);
         log.info(area);
 
         // this.data.areaData[area.AreaData.ID] = area;
         this.data.areaData[area.AreaData.ID] = area;
 
-        log.info("setStoredAreaData");
-
         return true;
     }
 
-    private delStoredAreaDataDebug(area: IAreaData) {
-        log.info("delStoredAreaDataDebug");
+    private AdminResetAreaDataDebug(areaId: string) {
+        log.info("AdminResetAreaDataDebug");
+
+        var area: IAreaData;
+        var areaData = this.data.areaData;
+        area = (areaData[areaId] = {
+            AreaData: new Area(),
+            Settings: new AreaSettings()
+        });
+
+        area.AreaData.ID = areaId;
+
         log.info(area)
 
         this.data.areaData[area.AreaData.ID] = area;
@@ -329,19 +328,21 @@ export default class Main extends Mod {
     * @param area Area
     * @returns Boolean
     */
-    public delStoredAreaData<K extends keyof IAreaData>(area: IAreaData, player: Player, key: K): boolean {
+    public DelAreaData(area: IAreaData, player: Player): boolean {
         // initializes it if it doesn't exist
-        log.info(`delStoredAreaData (${localPlayer.name}: ${area.AreaData.ID})`);
+        log.info(`delStoredAreaData (${player.name}: ${area.AreaData.ID})`);
 
         if (player.name == "" || player.name == undefined) {
             player.messages.type(MessageType.Stat).send(this.MsgAbandonAreaUnassigned)
             return false;
         }
 
-        if (player.name == area.AreaData.OwnedBy) {
+        if (player.name.toLowerCase() == area.AreaData.OwnedBy.toLowerCase()) {
             try {
-                //this.data.areaData[area.AreaData.ID].AreaData = new Area();
-                this.data.areaData[area.AreaData.ID] = { AreaData: new Area(), Settings: new AreaSettings() };
+                this.data.areaData[area.AreaData.ID] = {
+                    AreaData: new Area(),
+                    Settings: new AreaSettings()
+                };
 
                 player.messages.type(MessageType.Stat).send(this.MsgAbandonAreaSuccess)
                 this.AddAreaCount(player, -1);
@@ -354,13 +355,16 @@ export default class Main extends Mod {
             }
         }
 
-        if (player.name != area.AreaData.OwnedBy) {
-            player.messages.type(MessageType.Bad).send(this.MsgAbandonAreaNotOwner)
-        }
-
+        player.messages.type(MessageType.Bad).send(this.MsgAbandonAreaNotOwner)
         return false;
     }
 
+    /**
+     * Reset all player data including reinitializing areas the player owned to default state.
+     * @param targetPlayer The player to be flushed.
+     * @param player The player sending the request for message responses.
+     * @returns Boolean, true = success
+     */
     private ReinitAllPlayerData(targetPlayer: Player, player: Player): boolean {
         log.debug("ReinitAllPlayerData");
         const areas = this.GetAreaDataByPlayerName(targetPlayer.name);
@@ -402,17 +406,6 @@ export default class Main extends Mod {
     // Events
     //
 
-    // @EventHandler(Player, "preMove")
-    // public preMove(player: Player, fromTile: Tile, toTile: Tile, isMoving: boolean): undefined | boolean | void {
-
-    // }
-
-    @EventHandler(GameScreen, "show")
-    public onGameScreenVisible(): void {
-        //log.info("onGameScreenVisible occurred!");
-        //localPlayer.messages.type(MessageType.Good).send(this.messageMOTD);
-    }
-
     @EventHandler(EventBus.Players, "postMove")
     public onPlayerMove(player: Player, tile: Tile, fromTile: Tile): void {
         // Quick clean check of area:
@@ -423,26 +416,27 @@ export default class Main extends Mod {
         // Testing checks:
         // ===============
         const areaId = Areas.getAreaId(player);
-        const area = this.getStoredAreaData(areaId, "AreaData")
+        const area = this.GetAreaData(areaId)
         log.info(area);
-        log.info(area.Settings);
+
+        // LogTest.LogTest();
 
         // If area is not player area, disable them by turning into a ghost.
-        if (area.AreaData.Claimable == false && area.AreaData.OwnedBy != player.name) {
+        // if (area.AreaData.Claimable == false && area.AreaData.OwnedBy != player.name) {
 
-            // this.data.areaData[area.AreaData.ID] = area;
-            // Not working
-            log.info(this.data.areaData[areaId]);
-            // player.state = 4
-            //return true;
-            return;
-        }
+        // this.data.areaData[area.AreaData.ID] = area;
+        // Not working
+        // log.info(this.data.areaData[areaId]);
+        // player.state = 4
+        //return true;
+        //     return;
+        // }
 
         // If area is not another player's area, change back to human.
         //player.state = 0
         //return true;
 
-        //this.getStoredAreaData(area.AreaData.ID, "AreaData");
+        //this.getStoredAreaData(area.AreaData.ID);
 
         /*
             Area ID Mapping
@@ -512,12 +506,12 @@ export default class Main extends Mod {
                 break;
             case "abandon":
                 var areaId = Areas.getAreaId(player);
-                var area = this.getStoredAreaData(areaId, "AreaData");
-                this.delStoredAreaData(area, player, "AreaData");
+                var area = this.GetAreaData(areaId);
+                this.DelAreaData(area, player);
                 break;
             case "friends":
                 var method = cmdArgs[1];
-                if (method == undefined || method.trim() == "") {
+                if (method == undefined || method == "") {
                     // TODO: Change to player response
                     // log.info("Enter a sub-command! Syntax: /areas friends <add|remove> <player name>");
                     player.messages.type(MessageType.Bad).send(this.MsgCmdFriendSubCommandMissing);
@@ -525,16 +519,16 @@ export default class Main extends Mod {
                 }
 
                 var areaId = Areas.getAreaId(player);
-                var area = this.getStoredAreaData(areaId, "AreaData");
+                var area = this.GetAreaData(areaId);
 
                 if (area.AreaData.OwnedBy != player.name) {
                     player.messages.type(MessageType.Bad).send(this.MsgAreaNotOwned);
                     return;
                 }
 
-                var friendName = cmdArgs[2];
+                var friendName = cmdArgs[2].toLowerCase();
 
-                if (friendName == undefined || friendName.trim() == "") {
+                if (friendName == undefined || friendName == "") {
                     // TODO: Msg for enter a player name and show syntax
                     // Enter a valid player name!
                     player.messages.type(MessageType.Bad).send(this.MsgCmdPlayerMissing);
@@ -572,11 +566,77 @@ export default class Main extends Mod {
     }
 
     private CmdAdmin(player: Player, cmdArgs: Array<string>) {
+        log.info("CmdAdmin");
         log.debug(`CmdArgs 1: ${cmdArgs[1]}`);
         switch (cmdArgs[1]) {
+            case "claim":
+                // /Areas debug claim <player name>
+                var areaId = Areas.getAreaId(player);
+                var area: IAreaData;
+                var areaData = this.data.areaData;
+                var targetPlayerName = cmdArgs[2].toLowerCase();
+
+                if (targetPlayerName == undefined || targetPlayerName == "") {
+                    log.warn("Username was not sent!");
+                    return;
+                }
+
+                // Create new IAreaData object
+                area = (areaData[areaId] = {
+                    AreaData: new Area(),
+                    Settings: new AreaSettings()
+                });
+
+                // Set data
+
+                area.AreaData.ID = areaId;
+                area.AreaData.OwnedBy = targetPlayerName;
+                area.AreaData.Claimable = false;
+                area.Settings.isProtected = true;
+
+                // Set data
+                this.SetAreaData(area);
+                break;
+            case "friends":
+                var method = cmdArgs[2];
+                if (method == undefined || method == "") {
+                    log.info("Enter a sub-command! Syntax: /areas debug friends <add|remove> <player name>");
+                }
+
+                if (method.toLowerCase() == "add") {
+                    this.AddAreaFriend(player, cmdArgs[3], true);
+                }
+
+                if (method.toLowerCase() == "remove") {
+                    this.RemoveAreaFriend(player, cmdArgs[3], true);
+                }
+
+                break;
+            case "abandon":
+                // /Areas debug abandon
+                var areaId = Areas.getAreaId(player);
+
+                this.AdminResetAreaDataDebug(areaId);
+                break;
+            case "reinit":
+                const playerName = cmdArgs[2].toLowerCase();
+                if (playerName == undefined || playerName == "") {
+                    log.info("Enter a player ID! Syntax: /areas debug reinit <player name>")
+                    return;
+                }
+
+                var targetPlayer = this.GetTargetPlayerObjByName(playerName);
+
+                if (targetPlayer == undefined) {
+                    log.info("Player information not found.")
+                    return;
+                }
+
+                this.InitPlayerData(targetPlayer);
+                break;
             case "getplayerdata":
                 // Ensure admin command sub-parameter is set
-                if (cmdArgs[2] == undefined || cmdArgs[2].trim() == "") {
+                if (cmdArgs[2] == undefined || cmdArgs[2] == "") {
                     log.warn("Enter a valid player name!");
                     return;
                 }
@@ -596,7 +656,7 @@ export default class Main extends Mod {
                 break;
             case "flushdata":
                 // Ensure admin command sub-parameter is set
-                if (cmdArgs[2] == undefined || cmdArgs[2].trim() == "") {
+                if (cmdArgs[2] == undefined || cmdArgs[2] == "") {
                     log.warn("Enter a valid player name!");
                     return;
                 }
@@ -631,76 +691,7 @@ export default class Main extends Mod {
      */
     private CmdDebug(player: Player, cmdArgs: Array<string>) {
         switch (cmdArgs[1]) {
-            case "claim":
-                // /Areas debug claim <player name>
-                var areaId = Areas.getAreaId(player);
-                var area: IAreaData;
-                var areaData = this.data.areaData;
 
-                // Create new IAreaData object
-                area = (areaData[areaId] = {
-                    AreaData: new Area(),
-                    Settings: new AreaSettings()
-                });
-
-                // Set data
-                // cmdArgs[2] should be player name
-                area.AreaData.ID = areaId;
-                area.AreaData.OwnedBy = cmdArgs[2];
-                area.AreaData.Claimable = false;
-                area.Settings.isProtected = true;
-
-                // Set data
-                this.setStoredAreaData(area, "AreaData");
-                break;
-            case "friends":
-                var method = cmdArgs[2];
-                if (method == undefined || method.trim() == "") {
-                    log.info("Enter a sub-command! Syntax: /areas debug friends <add|remove> <player name>");
-                }
-
-                if (method.toLowerCase() == "add") {
-                    this.AddAreaFriend(player, cmdArgs[3], true);
-                }
-
-                if (method.toLowerCase() == "remove") {
-                    this.RemoveAreaFriend(player, cmdArgs[3], true);
-                }
-
-                break;
-            case "abandon":
-                // /Areas debug abandon
-                var areaId = Areas.getAreaId(player);
-                // var area = this.getStoredAreaData(areaId, "AreaData");
-                // area.Settings.isProtected = false;
-
-                var area: IAreaData;
-                var areaData = this.data.areaData;
-                area = (areaData[areaId] = {
-                    AreaData: new Area(),
-                    Settings: new AreaSettings()
-                });
-
-                area.AreaData.ID = areaId;
-
-                this.delStoredAreaDataDebug(area);
-                break;
-            case "reinit":
-                const playerName = cmdArgs[2]
-                if (playerName == undefined || playerName.trim() == "") {
-                    log.info("Enter a player ID! Syntax: /areas debug reinit <player name>")
-                    return;
-                }
-
-                var targetPlayer = this.GetTargetPlayerObjByName(playerName);
-
-                if (targetPlayer == undefined) {
-                    log.info("Player information not found.")
-                    return;
-                }
-
-                this.InitPlayerData(targetPlayer, "playerData");
-                break;
             default:
                 player.messages.type(MessageType.Bad).send(this.MsgUnknownCommand);
                 log.warn("Not Implimented");
@@ -773,7 +764,7 @@ export default class Main extends Mod {
 
 
         var areaId = Areas.getAreaId(player);
-        var area = this.getStoredAreaData(areaId, "AreaData");
+        var area = this.GetAreaData(areaId);
 
         if (area.AreaData.OwnedBy == player.name) {
             player.messages.type(MessageType.Warning).send(this.MsgClaimAlreadyOwner);
@@ -793,7 +784,7 @@ export default class Main extends Mod {
 
             log.info("Area is claimable. Attempting to store data:")
             log.info(area)
-            if (this.setStoredAreaData(area, "AreaData") === true) {
+            if (this.SetAreaData(area) === true) {
                 player.messages.type(MessageType.Stat).send(this.MsgAreaClaimSuccess);
                 this.AddAreaCount(player, 1);
                 return;
@@ -819,15 +810,17 @@ export default class Main extends Mod {
             return;
         }
 
-        log.info("Area is not a border!");
+        log.debug("Area is not a border!");
 
         areaId = Areas.getAreaId(player);
 
-        log.info(`Area ID: ${areaId}`);
+        log.debug(`Area ID: ${areaId}`);
 
-        var area = this.getStoredAreaData(areaId, "AreaData");
+        var area = this.GetAreaData(areaId);
 
         if (area == undefined) {
+            this.InitAreaData(areaId);
+
             // message user error occurred
             log.warn("getStoredAreaData returned undefined!")
             return;
@@ -840,7 +833,12 @@ export default class Main extends Mod {
             return;
         }
 
-        localPlayer.messages.type(MessageType.Warning).send(this.MsgAreaNotAvailable, area.AreaData.OwnedBy);
+        player.messages.type(MessageType.Warning).send(this.MsgAreaNotAvailable, area.AreaData.OwnedBy);
+
+        if (area.Settings.friends.includes(player.name.toLowerCase())) {
+            player.messages.type(MessageType.Good).send(this.MsgAreaCheckIsFriend);
+        }
+
         log.info(`Area is already claimed by ${area.AreaData.OwnedBy}`);
     }
 
@@ -877,10 +875,7 @@ export default class Main extends Mod {
         // Initialize data if not existing
         if (playersAffectedSet == undefined) {
             log.warn("Area save data was undefined. Creating new data.");
-            (playersAffectedSet = {
-                AreaData: new Area(),
-                Settings: new AreaSettings()
-            });
+            this.InitAreaData(facingAreaId);
             return false;
         }
 
@@ -912,15 +907,32 @@ export default class Main extends Mod {
     }
 
     /**
+     * Init area data
+     * @param areaId The area identifier
+     * @returns IAreaData
+     */
+    private InitAreaData(areaId: string): IAreaData {
+        log.info("InitAreaData");
+        var data = this.data.areaData;
+
+        // Store data
+        return data[areaId] = {
+            AreaData: { ID: areaId, OwnedBy: "", Claimable: true },
+            Settings: new AreaSettings()
+        };
+    }
+
+    /**
      * Initialize player data if it does not exist
      * @param player Player object
      * @param key PlayerData
      * @returns number
      */
-    private InitPlayerData<K extends keyof ISaveData>(player: Player, key: K): IPlayerData | void {
+    private InitPlayerData(player: Player): IPlayerData {
         log.info("InitPlayerData");
-        log.info("Initializing new player data!");
         var pdata = this.data.playerData;
+
+        // Store data
         return pdata[player.identifier] = {
             ID: player.identifier,
             Name: player.name,
@@ -948,7 +960,7 @@ export default class Main extends Mod {
 
         log.info("Data didn't exist!");
         // If data didnt exist, create it.
-        this.InitPlayerData(player, "playerData");
+        this.InitPlayerData(player);
 
         // Return 0 as new players never have claimed areas by default
         return 0;
@@ -980,7 +992,7 @@ export default class Main extends Mod {
 
         log.info("Data did not exist.")
         // If data didnt exist, create it.
-        this.InitPlayerData(player, "playerData");
+        this.InitPlayerData(player);
 
         // Return false as new user will never have limit
         return false;
@@ -1008,7 +1020,7 @@ export default class Main extends Mod {
         log.info("Data didn't exist.");
 
         // Init player data since didnt exist
-        var newData = this.InitPlayerData(player, "playerData");
+        var newData = this.InitPlayerData(player);
 
         // If data exists, increadse area count
         if (newData) {
@@ -1067,7 +1079,7 @@ export default class Main extends Mod {
         const areaId = Areas.getAreaId(player);
 
         // Get stored area data
-        const areaInfo = this.getStoredAreaData(areaId, "AreaData");
+        const areaInfo = this.GetAreaData(areaId);
 
         // Check if area data exists and belongs to player
         if (areaInfo.AreaData.OwnedBy == "") {
@@ -1089,7 +1101,7 @@ export default class Main extends Mod {
         areaInfo.Settings.friends.push(targetPlayerName.toLowerCase());
 
         // Store area data
-        if (this.setStoredAreaData(areaInfo, "AreaData")) {
+        if (this.SetAreaData(areaInfo)) {
             // Inform user the player was added successfully
             player.messages.type(MessageType.Good).send(this.MsgAreaFriendAddSuccess, targetPlayerName);
         } else {
@@ -1107,7 +1119,7 @@ export default class Main extends Mod {
         const areaId = Areas.getAreaId(player);
 
         // Get stored area data
-        const areaInfo = this.getStoredAreaData(areaId, "AreaData");
+        const areaInfo = this.GetAreaData(areaId);
 
         // Check if area data exists and belongs to player
         if (areaInfo.AreaData.OwnedBy == "") {
@@ -1129,7 +1141,7 @@ export default class Main extends Mod {
         areaInfo.Settings.friends.push(targetPlayerName);
 
         // Store area data
-        if (this.setStoredAreaData(areaInfo, "AreaData")) {
+        if (this.SetAreaData(areaInfo)) {
             // Inform user the player was added successfully
             player.messages.type(MessageType.Good).send(this.MsgAreaFriendRemoveSuccess, targetPlayerName);
         } else {
@@ -1707,7 +1719,7 @@ export default class Main extends Mod {
      */
     @Inject(Human, "setOptions", InjectionPosition.Post)
     public onSetPickupItemsOptions(api: IInjectionApi<any, "setOptions">, options: IOptions) {
-        log.info("onSetPickupItemsOptions");
+        log.debug("onSetPickupItemsOptions");
 
         const human = api.executingInstance;
 
@@ -1719,12 +1731,12 @@ export default class Main extends Mod {
                     log.info(`Area protected: ${isAreaProtected}`);
 
                     if (isAreaProtected === true) {
-                        log.info("Set canPickUpItems = false");
+                        log.debug("Set canPickUpItems = false");
                         const canPickUpItems = false; // whether items can be picked up on the tile the human is on
                         return canPickUpItems;
                     }
 
-                    log.info("Set canPickUpItems = true");
+                    log.debug("Set canPickUpItems = true");
                     const canPickUpItems = true; // whether items can be picked up on the tile the human is on
                     return canPickUpItems;
                 },
@@ -1739,12 +1751,12 @@ export default class Main extends Mod {
                     log.info(`Area protected: ${isAreaProtected}`);
 
                     if (isAreaProtected === true) {
-                        log.info("Set canPickupOnIdle = false")
+                        log.debug("Set canPickupOnIdle = false")
                         const canPickUpItems = false; // whether items can be picked up on the tile the human is on
                         return canPickUpItems;
                     }
 
-                    log.info("Set canPickupOnIdle = true")
+                    log.debug("Set canPickupOnIdle = true")
                     const canPickUpItems = true; // whether items can be picked up on the tile the human is on
                     return canPickUpItems;
                 },

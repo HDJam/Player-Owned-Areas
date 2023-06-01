@@ -1,14 +1,32 @@
 import Mod from "mod/Mod";
 import Player from "game/entity/player/Player";
 import Tile from "game/tile/Tile";
+import Log from "utilities/Log";
+import Register from "mod/ModRegistry";
+import Message from "language/dictionary/Message";
+import { MessageType } from "game/entity/player/IMessageManager";
+
+
+// Testing log and player messages
+// export class LogTest {
+//     @Register.message("motd")
+//     public static readonly motd: Message;
+
+//     private static log: Log = new Log("[Mod]", "[Areas]");
+
+
+//     public static LogTest() {
+//         this.log.info("THIS IS A TEST!!!");
+//         this.log.info(localPlayer.name);
+//         localPlayer.messages.type(MessageType.Stat).send(this.motd)
+//     }
+// }
+
 
 export class Area {
-
-
     public ID: string = "0";
     public OwnedBy: string = "";
     public Claimable: boolean = true;
-
 }
 
 export class AreaSettings {
@@ -24,7 +42,7 @@ export class AreaSettings {
     friends: Array<string> = [];
 }
 
-export default class Areas extends Mod {
+export class Areas extends Mod {
 
     /**
      * Gets the player's coordinates and creates an area ID.
