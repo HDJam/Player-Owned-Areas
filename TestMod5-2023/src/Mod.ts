@@ -67,6 +67,7 @@ import PickUpExcrement from "game/entity/action/actions/PickUpExcrement";
 import AttachContainer from "game/entity/action/actions/AttachContainer";
 
 import CloseContainer from "game/entity/action/actions/CloseContainer";
+import { PlayerData } from "./PlayerData";
 
 
 //import ToggleProtectedItems from "game/entity/action/actions/ToggleProtectedItems";
@@ -77,7 +78,7 @@ export class ModSettings {
 
 let log: Log;
 
-export default class HelloWorld extends Mod {
+export default class Main extends Mod {
 
     ////////////////////////////////////
     // Messages
@@ -99,6 +100,8 @@ export default class HelloWorld extends Mod {
     public readonly MsgAreaNotAvailable: Message;
     @Register.message("MsgUnknownCommand")
     public readonly MsgUnknownCommand: Message;
+    @Register.message("MsgAdminUnknownCommand")
+    public readonly MsgAdminUnknownCommand: Message;
     @Register.message("MsgAbandonAreaError")
     public readonly MsgAbandonAreaError: Message;
     @Register.message("MsgAbandonAreaSuccess")
@@ -121,6 +124,25 @@ export default class HelloWorld extends Mod {
     public readonly MsgGetPlayerAreaDetails: Message
     @Register.message("MsgGetPlayerDetails")
     public readonly MsgGetPlayerDetails: Message
+    @Register.message("MsgAreaNotOwned")
+    public readonly MsgAreaNotOwned: Message;
+    @Register.message("MsgAreaFriendPreExists")
+    public readonly MsgAreaFriendPreExists: Message;
+    @Register.message("MsgAreaFriendAddSuccess")
+    public readonly MsgAreaFriendAddSuccess: Message
+    @Register.message("MsgAreaFriendAddFailure")
+    public readonly MsgAreaFriendAddFailure: Message
+    @Register.message("MsgAreaFriendNotInList")
+    public readonly MsgAreaFriendNotInList: Message
+    @Register.message("MsgAreaFriendRemoveSuccess")
+    public readonly MsgAreaFriendRemoveSuccess: Message
+    @Register.message("MsgAreaFriendRemoveFailure")
+    public readonly MsgAreaFriendRemoveFailure: Message
+
+    @Register.message("MsgFlushSuccess")
+    public readonly MsgFlushSuccess: Message
+    @Register.message("MsgFlushFailure")
+    public readonly MsgFlushFailure: Message
 
     // Help Messages
 
@@ -183,17 +205,38 @@ export default class HelloWorld extends Mod {
     @Mod.globalData<Mod>()
     public globalData: IGlobalData;
 
-    private GetStoredDataByPlayerName(targetPlayer: Player, player: Player) {
+    private GetAreaDataByPlayerName(targetPlayerName: string): Array<String> {
         const data = this.data;
-        const playerData = data.playerData[targetPlayer.identifier];
-        var PlayerAreas = new Array<Area>;
+        var PlayerAreas = new Array<String>;
 
+        // Extract the area IDs owned by given player name.
         for (var index in data.areaData) {
-            if (data.areaData[index].AreaData.OwnedBy == targetPlayer.name) {
-                PlayerAreas.push(data.areaData[index].AreaData);
+            if (data.areaData[index].AreaData.OwnedBy == targetPlayerName) {
+                PlayerAreas.push(data.areaData[index].AreaData.ID);
             }
             log.info(index);
         }
+
+        return PlayerAreas;
+    }
+
+    private GetPlayerDataById(targetPlayerId: string): IPlayerData | undefined {
+        const data = this.data;
+        return data.playerData[targetPlayerId];
+    }
+
+    private PrintStoredDataByPlayerName(targetPlayer: Player, player: Player) {
+        const data = this.data;
+        const playerData = this.GetPlayerDataById(targetPlayer.identifier);
+        var PlayerAreaIDs = this.GetAreaDataByPlayerName(targetPlayer.name);
+
+        for (var index in data.areaData) {
+            if (data.areaData[index].AreaData.OwnedBy == targetPlayer.name) {
+                PlayerAreaIDs.push(data.areaData[index].AreaData.ID);
+            }
+            log.info(index);
+        }
+
 
         // log.info("---");
         // log.info(data);
@@ -202,10 +245,10 @@ export default class HelloWorld extends Mod {
         log.info("---");
         log.info(playerData);
         log.info("---");
-        log.info(PlayerAreas);
+        log.info(PlayerAreaIDs);
         log.info("---");
 
-        var AreaMsgStr = this.FormatMsgPlayerAreas(PlayerAreas);
+        var AreaMsgStr = this.FormatMsgPlayerAreaIDs(PlayerAreaIDs);
 
         // Output result to admin chat menu
         if (playerData) {
@@ -313,6 +356,39 @@ export default class HelloWorld extends Mod {
         }
 
         return false;
+    }
+
+    private ReinitAllPlayerData(targetPlayer: Player, player: Player): boolean {
+        log.debug("ReinitAllPlayerData");
+        const areas = this.GetAreaDataByPlayerName(targetPlayer.name);
+        var playerData = this.GetPlayerDataById(targetPlayer.identifier);
+        var data = this.data;
+
+        // If areas were in player's name, clear each areaId.
+        if (areas.length > 0) {
+            for (var areaId in areas) {
+                log.debug(`Resetting area ID: ${areaId}`)
+                data.areaData[areaId] = {
+                    AreaData: new Area,
+                    Settings: new AreaSettings
+                }
+            }
+            log.debug("Player areas flushed.")
+        }
+
+        // If player data is undefined
+        if (playerData == undefined) {
+            log.debug("Player data did not exist.")
+            return true;
+        }
+
+        // Update the claimed areas only (Retain name and ID may be useful?)
+        playerData.ClaimedAreas = 0;
+        data.playerData[playerData.ID] = playerData;
+
+        log.debug("Player data flushed.")
+
+        return true;
     }
 
     ////////////////////////////////////
@@ -462,21 +538,38 @@ export default class HelloWorld extends Mod {
                     return;
                 }
 
-                var targetPlayer = game.playerManager.getByName(cmdArgs[2]);
+                var targetPlayer = this.GetTargetPlayerObjByName(cmdArgs[2]);
 
                 if (targetPlayer == undefined) {
-                    log.warn(`User ${cmdArgs[2]} does not exist!`);
+                    log.warn(`User does not exist!`);
                     return;
                 }
 
                 log.info(`User ${[cmdArgs[2]]} exists!`);
-                var result = this.GetStoredDataByPlayerName(targetPlayer, player);
+                var result = this.PrintStoredDataByPlayerName(targetPlayer, player);
 
                 log.info(result);
 
                 break;
+            case "FlushData":
+                var targetPlayer = this.GetTargetPlayerObjByName(cmdArgs[2]);
+
+                if (targetPlayer == undefined) {
+                    log.warn(`User does not exist!`);
+                    return;
+                }
+
+                log.info(`User ${[cmdArgs[2]]} exists!`);
+
+                if (this.ReinitAllPlayerData(targetPlayer, player) == true) {
+                    player.messages.type(MessageType.Good).send(this.MsgFlushSuccess, targetPlayer.name);
+                    return;
+                }
+                player.messages.type(MessageType.Bad).send(this.MsgFlushFailure, targetPlayer.name);
+                break;
             default:
-                player.messages.type(MessageType.Bad).send(this.MsgUnknownCommand);
+                player.messages.type(MessageType.Bad).send(this.MsgAdminUnknownCommand);
+                // 
                 log.warn("Not Implimented");
                 break;
         }
@@ -511,6 +604,21 @@ export default class HelloWorld extends Mod {
                 // Set data
                 this.setStoredAreaData(area, "AreaData");
                 break;
+            case "friends":
+                var method = cmdArgs[2];
+                if (method == undefined || method.trim() == "") {
+                    log.info("Enter a sub-command! Syntax: /areas debug friends <add|remove> <player name>");
+                }
+
+                if (method.toLowerCase() == "add") {
+                    this.AddAreaFriend(player, cmdArgs[3], true);
+                }
+
+                if (method.toLowerCase() == "remove") {
+                    this.RemoveAreaFriend(player, cmdArgs[3], true);
+                }
+
+                break;
             case "abandon":
                 // /Areas debug abandon
                 var areaId = Areas.getAreaId(player);
@@ -535,7 +643,7 @@ export default class HelloWorld extends Mod {
                     return;
                 }
 
-                var targetPlayer = game.playerManager.getByName(playerName);
+                var targetPlayer = this.GetTargetPlayerObjByName(playerName);
 
                 if (targetPlayer == undefined) {
                     log.info("Player information not found.")
@@ -543,6 +651,10 @@ export default class HelloWorld extends Mod {
                 }
 
                 this.InitPlayerData(targetPlayer, "playerData");
+                break;
+            default:
+                player.messages.type(MessageType.Bad).send(this.MsgUnknownCommand);
+                log.warn("Not Implimented");
                 break;
         }
     }
@@ -560,27 +672,7 @@ export default class HelloWorld extends Mod {
         log.info("GetAreasHelp");
         log.info(args);
 
-        if (args == undefined) {
-            log.info("No args received, general help")
-            // No args were passed so user passed /areas help
-
-            localPlayer.messages.type(MessageType.Stat).send(this.MsgHelpGeneral);
-
-            // Welcome to Areas help!\n
-            // You may use \"/areas help commands\" to see command list\n
-            // You may find command specific help by entering "/areas help <command>".\n
-            // Example: /areas help check\n
-            return;
-        }
-
         switch (args) {
-            case "commands":
-                localPlayer.messages.type(MessageType.Stat).send(this.MsgHelpCommands);
-                // Some basic commands are:\n
-                // \"/areas check\", to check the plot you are on.
-                // \n\"/areas claim\", to claim the plot if available.
-                // \n\"/areas abandon\", to unclaim the land if you are the owner.
-                break;
             case "check":
                 localPlayer.messages.type(MessageType.Stat).send(this.MsgHelpCheck);
                 // Check the current location for ownership. 
@@ -596,8 +688,25 @@ export default class HelloWorld extends Mod {
                 // Attempt to abandon your ownership of the current area.
                 // \nSyntax: /areas abandon
                 break;
-        }
+            case "commands":
+                localPlayer.messages.type(MessageType.Stat).send(this.MsgHelpCommands);
+                // Some basic commands are:\n
+                // \"/areas check\", to check the plot you are on.
+                // \n\"/areas claim\", to claim the plot if available.
+                // \n\"/areas abandon\", to unclaim the land if you are the owner.
+                break;
+            default:
+                log.debug("No sub-args received, general help")
+                // No args were passed so user passed /areas help
 
+                localPlayer.messages.type(MessageType.Stat).send(this.MsgHelpGeneral);
+
+                // Welcome to Areas help!\n
+                // You may use \"/areas help commands\" to see command list\n
+                // You may find command specific help by entering "/areas help <command>".\n
+                // Example: /areas help check\n
+                break;
+        }
     }
 
     /**
@@ -729,6 +838,12 @@ export default class HelloWorld extends Mod {
         if (playersAffectedSet.Settings.isProtected == false) {
             log.debug("Area is not protected.");
             return false;
+        }
+
+        // If player is in ally list
+        if (playersAffectedSet.Settings.friends.includes(player.name)) {
+            log.debug("Player is friend and has access to area functions.");
+            return true;
         }
 
         if (playersAffectedSet.AreaData.OwnedBy == player.name) {
@@ -868,10 +983,15 @@ export default class HelloWorld extends Mod {
         return false;
     }
 
-    private FormatMsgPlayerAreas(data: Area[]): string {
+    /**
+     * Outputs a string containing all the player-owned areas by Area ID
+     * @param data Array of areas
+     * @returns string
+     */
+    private FormatMsgPlayerAreaIDs(data: String[]): string {
         var message = "";
         for (var index in data) {
-            message += `${data[index].ID}\n`
+            message += `${data[index]}\n`
         }
 
         /*
@@ -880,6 +1000,96 @@ export default class HelloWorld extends Mod {
          */
         return message;
     }
+
+    /**
+     * Add a friend to area settings.
+     * @param playerId The player identifier
+     * @param targetPlayerName The target player name
+     * @param forceSet If admin sends debug command, change by force if value is in list.
+     */
+    private AddAreaFriend(player: Player, targetPlayerName: string, forceSet: boolean = false) {
+        const areaId = Areas.getAreaId(player);
+
+        // Get stored area data
+        const areaInfo = this.getStoredAreaData(areaId, "AreaData");
+
+        // Check if area data exists and belongs to player
+        if (areaInfo.AreaData.OwnedBy == "") {
+            // Inform user area is not owned by anyone
+            player.messages.type(MessageType.Bad).send(this.MsgAreaNotOwned);
+            // Area is not claimed by anyone.
+            return;
+        }
+
+        // Check if area friends already has this user
+        if (areaInfo.Settings.friends.includes(targetPlayerName)) {
+            // Inform user that this area already has this player as a friend
+            player.messages.type(MessageType.Bad).send(this.MsgAreaFriendPreExists, targetPlayerName);
+            // Area settings already has {0} specified!
+            return;
+        }
+
+        // Add target player name to friends list
+        areaInfo.Settings.friends.push(targetPlayerName);
+
+        // Store area data
+        if (this.setStoredAreaData(areaInfo, "AreaData")) {
+            // Inform user the player was added successfully
+            player.messages.type(MessageType.Good).send(this.MsgAreaFriendAddSuccess, targetPlayerName);
+        } else {
+            player.messages.type(MessageType.Good).send(this.MsgAreaFriendAddFailure, targetPlayerName);
+        }
+    }
+
+    /**
+     * Remove a friend to area settings.
+     * @param playerId The player identifier
+     * @param targetPlayerName The target player name
+     * @param forceSet If admin sends debug command, change by force if value is in list.
+     */
+    private RemoveAreaFriend(player: Player, targetPlayerName: string, forceSet: boolean = false) {
+        const areaId = Areas.getAreaId(player);
+
+        // Get stored area data
+        const areaInfo = this.getStoredAreaData(areaId, "AreaData");
+
+        // Check if area data exists and belongs to player
+        if (areaInfo.AreaData.OwnedBy == "") {
+            // Inform user area is not owned by anyone
+            player.messages.type(MessageType.Bad).send(this.MsgAreaNotOwned);
+            // Area is not claimed by anyone.
+            return;
+        }
+
+        // Check if area friends already has this user
+        if (areaInfo.Settings.friends.includes(targetPlayerName) == false) {
+            // Inform user that this area already has this player as a friend
+            player.messages.type(MessageType.Bad).send(this.MsgAreaFriendNotInList, targetPlayerName);
+            // Area settings already has {0} specified!
+            return;
+        }
+
+        // Add target player name to friends list
+        areaInfo.Settings.friends.push(targetPlayerName);
+
+        // Store area data
+        if (this.setStoredAreaData(areaInfo, "AreaData")) {
+            // Inform user the player was added successfully
+            player.messages.type(MessageType.Good).send(this.MsgAreaFriendRemoveSuccess, targetPlayerName);
+        } else {
+            player.messages.type(MessageType.Good).send(this.MsgAreaFriendRemoveFailure, targetPlayerName);
+        }
+    }
+
+    /**
+     * Grabs the player object from playerManager if the player exists in game data.
+     * @param name Name of player
+     * @returns Player or undefined if not found.
+     */
+    private GetTargetPlayerObjByName(name: string): Player | undefined {
+        return game.playerManager.getByName(name);
+    }
+
 
 
     ////////////////////////////////////
