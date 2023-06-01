@@ -21,7 +21,7 @@ export class AreaSettings {
      * What is the area friend list?
      * If user is in list, allow past area protection
      */
-    friends: Array<string>;
+    friends: Array<string> = [];
 }
 
 export default class Areas extends Mod {

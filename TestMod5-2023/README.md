@@ -4,12 +4,13 @@ This mod will allow admins to create "safe" zones for players and
 
 # Commands
 ## Area Commands
-| Command | Subcommand | Description                                                                                                                                        |
-|---------|------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
-| /areas  | check      | Check current area that the player is standing on. The command will explain if the area is available or claimed in chat.                           |
-| /areas  | claim      | Allows player to claim the area they are currently on. Claim command will respond with if successful, error, or if another player already claimed. |
-| /areas  | abandon    | Allows player to abandon the area they are currently on if owned by the player.                                                                    |
-| /areas  | count      | Allows the player to see how many areas they claimed vs the maximum allowed on the server. Default maximum is 16.                                  |
+| Command | Subcommand | Parameter 1 | Parameter 2   | Description                                                                                                                                        |
+|---------|------------|-------------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| /areas  | check      |             |               | Check current area that the player is standing on. The command will explain if the area is available or claimed in chat.                           |
+| /areas  | claim      |             |               | Allows player to claim the area they are currently on. Claim command will respond with if successful, error, or if another player already claimed. |
+| /areas  | abandon    |             |               | Allows player to abandon the area they are currently on if owned by the player.                                                                    |
+| /areas  | count      |             |               | Allows the player to see how many areas they claimed vs the maximum allowed on the server. Default maximum is 16.                                  |
+| /areas  | friends    | add|remove  | <player name> | Add a friend to the current area.                                                                                                                  |
 
 ## Help Commands
 | Command | Subcommand | Parameter | Result               |

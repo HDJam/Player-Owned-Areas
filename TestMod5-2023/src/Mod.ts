@@ -63,11 +63,8 @@ import Lockpick from "game/entity/action/actions/Lockpick";
 import CageCreature from "game/entity/action/actions/CageCreature";
 import Uncage from "game/entity/action/actions/Uncage";
 import PickUpExcrement from "game/entity/action/actions/PickUpExcrement";
-
 import AttachContainer from "game/entity/action/actions/AttachContainer";
-
 import CloseContainer from "game/entity/action/actions/CloseContainer";
-import { PlayerData } from "./PlayerData";
 
 
 //import ToggleProtectedItems from "game/entity/action/actions/ToggleProtectedItems";
@@ -138,11 +135,15 @@ export default class Main extends Mod {
     public readonly MsgAreaFriendRemoveSuccess: Message
     @Register.message("MsgAreaFriendRemoveFailure")
     public readonly MsgAreaFriendRemoveFailure: Message
-
     @Register.message("MsgFlushSuccess")
     public readonly MsgFlushSuccess: Message
     @Register.message("MsgFlushFailure")
     public readonly MsgFlushFailure: Message
+    @Register.message("MsgCmdPlayerMissing")
+    public readonly MsgCmdPlayerMissing: Message
+    @Register.message("MsgCmdFriendSubCommandMissing")
+    public readonly MsgCmdFriendSubCommandMissing: Message
+
 
     // Help Messages
 
@@ -206,11 +207,13 @@ export default class Main extends Mod {
     public globalData: IGlobalData;
 
     private GetAreaDataByPlayerName(targetPlayerName: string): Array<String> {
+        log.debug("GetAreaDataByPlayerName");
         const data = this.data;
         var PlayerAreas = new Array<String>;
 
         // Extract the area IDs owned by given player name.
         for (var index in data.areaData) {
+
             if (data.areaData[index].AreaData.OwnedBy == targetPlayerName) {
                 PlayerAreas.push(data.areaData[index].AreaData.ID);
             }
@@ -364,9 +367,13 @@ export default class Main extends Mod {
         var playerData = this.GetPlayerDataById(targetPlayer.identifier);
         var data = this.data;
 
+
         // If areas were in player's name, clear each areaId.
         if (areas.length > 0) {
-            for (var areaId in areas) {
+            for (var index in areas) {
+                const areaId = areas[index].toString();
+                log.debug("Areas:")
+                log.debug(areaId)
                 log.debug(`Resetting area ID: ${areaId}`)
                 data.areaData[areaId] = {
                     AreaData: new Area,
@@ -508,6 +515,41 @@ export default class Main extends Mod {
                 var area = this.getStoredAreaData(areaId, "AreaData");
                 this.delStoredAreaData(area, player, "AreaData");
                 break;
+            case "friends":
+                var method = cmdArgs[1];
+                if (method == undefined || method.trim() == "") {
+                    // TODO: Change to player response
+                    // log.info("Enter a sub-command! Syntax: /areas friends <add|remove> <player name>");
+                    player.messages.type(MessageType.Bad).send(this.MsgCmdFriendSubCommandMissing);
+                    return;
+                }
+
+                var areaId = Areas.getAreaId(player);
+                var area = this.getStoredAreaData(areaId, "AreaData");
+
+                if (area.AreaData.OwnedBy != player.name) {
+                    player.messages.type(MessageType.Bad).send(this.MsgAreaNotOwned);
+                    return;
+                }
+
+                var friendName = cmdArgs[2];
+
+                if (friendName == undefined || friendName.trim() == "") {
+                    // TODO: Msg for enter a player name and show syntax
+                    // Enter a valid player name!
+                    player.messages.type(MessageType.Bad).send(this.MsgCmdPlayerMissing);
+                    return;
+                }
+
+                if (method.toLowerCase() == "add") {
+                    this.AddAreaFriend(player, friendName, true);
+                }
+
+                if (method.toLowerCase() == "remove") {
+                    this.RemoveAreaFriend(player, friendName, true);
+                }
+
+                break;
             case "debug":
                 // Call debug functions
                 if (this.IsUserAdmin(player.name)) {
@@ -530,8 +572,9 @@ export default class Main extends Mod {
     }
 
     private CmdAdmin(player: Player, cmdArgs: Array<string>) {
+        log.debug(`CmdArgs 1: ${cmdArgs[1]}`);
         switch (cmdArgs[1]) {
-            case "GetPlayerData":
+            case "getplayerdata":
                 // Ensure admin command sub-parameter is set
                 if (cmdArgs[2] == undefined || cmdArgs[2].trim() == "") {
                     log.warn("Enter a valid player name!");
@@ -551,7 +594,13 @@ export default class Main extends Mod {
                 log.info(result);
 
                 break;
-            case "FlushData":
+            case "flushdata":
+                // Ensure admin command sub-parameter is set
+                if (cmdArgs[2] == undefined || cmdArgs[2].trim() == "") {
+                    log.warn("Enter a valid player name!");
+                    return;
+                }
+
                 var targetPlayer = this.GetTargetPlayerObjByName(cmdArgs[2]);
 
                 if (targetPlayer == undefined) {
@@ -832,7 +881,15 @@ export default class Main extends Mod {
                 AreaData: new Area(),
                 Settings: new AreaSettings()
             });
+            return false;
         }
+
+        if (playersAffectedSet.AreaData.OwnedBy == player.name) {
+            log.debug("Player owns area.");
+            return false;
+        }
+
+        log.debug("Area was defined");
 
         // If area is not protected
         if (playersAffectedSet.Settings.isProtected == false) {
@@ -840,16 +897,15 @@ export default class Main extends Mod {
             return false;
         }
 
-        // If player is in ally list
-        if (playersAffectedSet.Settings.friends.includes(player.name)) {
-            log.debug("Player is friend and has access to area functions.");
-            return true;
-        }
+        log.debug(`Area is protected. Checking if ${player.name} is friend.`);
 
-        if (playersAffectedSet.AreaData.OwnedBy == player.name) {
-            log.debug("Player owns area.");
+        // If player is in ally list
+        if (playersAffectedSet.Settings.friends.includes(player.name.toLowerCase())) {
+            log.debug("Player is friend and has access to area functions.");
             return false;
         }
+
+        log.debug("User not a friend of owner");
 
         log.debug("Area protected, disable player functions.");
         return true;
@@ -931,11 +987,11 @@ export default class Main extends Mod {
     }
 
     /**
- * 
- * @param player Player Data
- * @param num Send 1 or -1 to add or remove 1
- * @returns Nothing
- */
+     * Add area count to the player's total. If player data doesnt exist, it is initialized.
+     * @param player Player Data
+     * @param num Send 1 or -1 to add or remove 1
+     * @returns Nothing
+     */
     public AddAreaCount(player: Player, num: number) {
         log.info("AddAreaCount");
         const playerData = this.data.playerData;
@@ -1022,7 +1078,7 @@ export default class Main extends Mod {
         }
 
         // Check if area friends already has this user
-        if (areaInfo.Settings.friends.includes(targetPlayerName)) {
+        if (areaInfo.Settings.friends.includes(targetPlayerName.toLowerCase())) {
             // Inform user that this area already has this player as a friend
             player.messages.type(MessageType.Bad).send(this.MsgAreaFriendPreExists, targetPlayerName);
             // Area settings already has {0} specified!
@@ -1030,7 +1086,7 @@ export default class Main extends Mod {
         }
 
         // Add target player name to friends list
-        areaInfo.Settings.friends.push(targetPlayerName);
+        areaInfo.Settings.friends.push(targetPlayerName.toLowerCase());
 
         // Store area data
         if (this.setStoredAreaData(areaInfo, "AreaData")) {
