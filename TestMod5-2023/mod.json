@@ -1,6 +1,6 @@
 {
-	"name": "Test Mod 2023",
-	"description": "Test mod project 5-2023",
+	"name": "Player-Owned Areas",
+	"description": "Players may claim land, aka areas, that are protected from other players.",
 	"version": "1.0.0",
 	"author": "HDJam",
 	"file": "out/Mod",
