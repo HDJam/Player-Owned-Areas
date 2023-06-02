@@ -2,7 +2,6 @@
     "extends": "English",
     "dictionaries": {
         "message": {
-            "AreasAreasMotd": "Welcome to the server!",
             "ModPlayerOwnedAreasMotd": "Welcome to the server!",
             "ModPlayerOwnedAreasPrevNextTileNames": "Previous tile: {0}, New tile: {1}.",
             "ModPlayerOwnedAreasTileLocation": "Tile location: {0}({1}) - x{2}, y{3}",

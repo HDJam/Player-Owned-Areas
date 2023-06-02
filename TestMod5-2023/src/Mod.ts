@@ -9,7 +9,7 @@ import Tile from "game/tile/Tile";
 import Player from "game/entity/player/Player";
 import { IAreaData, IGlobalData, IPlayerData, ISaveData } from "./IDataSave";
 import Version from "./Version";
-import { Area, AreaSettings, Areas } from "./Areas";
+import Areas, { Area, AreaSettings } from "./Areas";
 import Ignite from "game/entity/action/actions/Ignite";
 import { IInjectionApi, InjectObject, InjectionPosition, Inject } from "utilities/class/Inject";
 import ToggleTilled from "game/entity/action/actions/ToggleTilled";
@@ -65,7 +65,7 @@ import Uncage from "game/entity/action/actions/Uncage";
 import PickUpExcrement from "game/entity/action/actions/PickUpExcrement";
 import AttachContainer from "game/entity/action/actions/AttachContainer";
 import CloseContainer from "game/entity/action/actions/CloseContainer";
-import { LogTest } from "./Areas"
+import LogTest from "./Areas"
 
 
 //import ToggleProtectedItems from "game/entity/action/actions/ToggleProtectedItems";
@@ -78,7 +78,7 @@ export default class Main extends Mod {
     // Messages
     //
     @Register.message("motd")
-    public readonly messageMOTD: Message;
+    public static readonly messageMOTD: Message;
     @Register.message("PrevNextTileNames")
     public readonly messageHelloTerrain: Message;
     @Register.message("TileLocation")
@@ -157,6 +157,11 @@ export default class Main extends Mod {
     public readonly MsgHelpClaim: Message;
     @Register.message("MsgHelpAbandon")
     public readonly MsgHelpAbandon: Message;
+
+    // your LogTest instance will be instantiated here. Don't make any more instances of LogTest yourself or it will break
+    // Register log test
+    @Register.registry(Areas)
+    public readonly logTest: Areas;
 
     ////////////////////////////////////
     // Overrides
@@ -419,7 +424,10 @@ export default class Main extends Mod {
         const area = this.GetAreaData(areaId)
         log.info(area);
 
-        // LogTest.LogTest();
+
+        // localPlayer.messages.type(MessageType.Stat).send(this.logTest.motd);
+        LogTest.LogTest();
+
 
         // If area is not player area, disable them by turning into a ghost.
         // if (area.AreaData.Claimable == false && area.AreaData.OwnedBy != player.name) {
