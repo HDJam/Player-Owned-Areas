@@ -65,7 +65,7 @@ import Uncage from "game/entity/action/actions/Uncage";
 import PickUpExcrement from "game/entity/action/actions/PickUpExcrement";
 import AttachContainer from "game/entity/action/actions/AttachContainer";
 import CloseContainer from "game/entity/action/actions/CloseContainer";
-import LogTest from "./Areas"
+import GameScreen from "ui/screen/screens/GameScreen";
 
 
 //import ToggleProtectedItems from "game/entity/action/actions/ToggleProtectedItems";
@@ -77,15 +77,9 @@ export default class Main extends Mod {
     ////////////////////////////////////
     // Messages
     //
-    @Register.message("motd")
-    public static readonly messageMOTD: Message;
-    @Register.message("PrevNextTileNames")
-    public readonly messageHelloTerrain: Message;
-    @Register.message("TileLocation")
-    public readonly messageTileLocation: Message;
-    @Register.message("NewAreaEntryMsg")
-    public readonly messageNewAreaEntry: Message;
 
+    @Register.message("MsgMotd")
+    public readonly MsgMotd: Message;
     @Register.message("MsgAreaBorder")
     public readonly msgAreaBorder: Message;
     @Register.message("MsgLandAreaAvailable")
@@ -411,6 +405,13 @@ export default class Main extends Mod {
     // Events
     //
 
+    @EventHandler(GameScreen, "show")
+    public onScreenShow() {
+        if (ModSettings.ShowMOTD == true) {
+            localPlayer.messages.type(MessageType.Good).send(this.MsgMotd, ModSettings.MOTD);
+        }
+    }
+
     @EventHandler(EventBus.Players, "postMove")
     public onPlayerMove(player: Player, tile: Tile, fromTile: Tile): void {
         // Quick clean check of area:
@@ -426,7 +427,7 @@ export default class Main extends Mod {
 
 
         // localPlayer.messages.type(MessageType.Stat).send(this.logTest.motd);
-        LogTest.LogTest();
+        // LogTest.LogTest();
 
 
         // If area is not player area, disable them by turning into a ghost.
@@ -1195,6 +1196,9 @@ export default class Main extends Mod {
     @InjectObject(ToggleTilled, "canUseHandler", InjectionPosition.Pre)
     public onCanUseTill(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
         var isAreaProtected = this.CheckAreaProtected(localPlayer);
+
+        // TODO: Find way to see if there is a way to idenfity the action that calls this method. If so, permissions can be added for each action and configurable via ModSettings.
+        log.info(api);
 
         if (isAreaProtected) {
             log.debug("Till action hidden")

@@ -1,6 +1,6 @@
-﻿$WorkingDir = "C:\Program Files (x86)\Steam\steamapps\common\Wayward\moddev";
+﻿$WorkingDir = "C:\Program Files (x86)\Steam\steamapps\common\Wayward\Mod Development";
 $DestinationDir = "C:\Program Files (x86)\Steam\steamapps\common\Wayward\mods";
-$ModFolder = "TestMod5-2023";
+$ModFolder = "Player-Owned-Areas";
 
 Remove-Item "$DestinationDir\$ModFolder" -Recurse;
 

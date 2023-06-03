@@ -2,10 +2,7 @@
     "extends": "English",
     "dictionaries": {
         "message": {
-            "ModPlayerOwnedAreasMotd": "Welcome to the server!",
-            "ModPlayerOwnedAreasPrevNextTileNames": "Previous tile: {0}, New tile: {1}.",
-            "ModPlayerOwnedAreasTileLocation": "Tile location: {0}({1}) - x{2}, y{3}",
-            "ModPlayerOwnedAreasNewAreaEntryMsg": "You have entered area (AID:{0})   |   Previous (AID:{1})",
+            "ModPlayerOwnedAreasMsgMotd": "MOTD: {0}",
             "ModPlayerOwnedAreasMsgAreaBorder": "Land is border of island and cannot be purchased.",
             "ModPlayerOwnedAreasMsgLandAreaAvailable": "Area is unclaimed!",
             "ModPlayerOwnedAreasMsgAreaNotAvailable": "This area is unavailable. Current owner: {0}",
