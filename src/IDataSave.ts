@@ -29,6 +29,7 @@ export interface IPlayerData {
     ID: string;
     Name: string;
     ClaimedAreas: number;
+    Friends: Array<string>;
 }
 
 export interface IGlobalData {

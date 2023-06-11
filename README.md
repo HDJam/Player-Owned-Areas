@@ -22,15 +22,15 @@ This mod will allow admins to create "safe" zones on maps and allow players to c
 | /areas  | help       | commands  | Commands description |
 
 ## Admin Commands
-| Command | Subcommand | Parameters                                     | Description                                                 |
-|-------- |------------|------------------------------------------------|-------------------------------------------------------------|
-| /areas  | admin      |                                                | Unknown command message will display. (Will eventually show admin help message) |
-| /areas  | admin      | \<player name\>                                | Get player details and owned areas.                         |
-| /areas  | admin      | flushdata \<player name\>                      | Reset's specified player's data. This includes owned areas. |
-| /areas  | admin      | claim \<player name\>                          | Claim an area in the name of a player.                        |
-| /areas  | admin      | friends \<add\|remove\> \<player name\>        | Add or remove a friend to the area currently standing on.     |
-| /areas  | admin      | abandon                                        | Abandon an area the user is standing on no matter the player. |
-| /areas  | admin      | reinit \<player name\>                         | Reset player data. This does not include owned areas.         |
+| Command | Subcommand | Parameters                                                     | Description                                                                     |
+|-------- |------------|----------------------------------------------------------------|---------------------------------------------------------------------------------|
+| /areas  | admin      |                                                                | Unknown command message will display. (Will eventually show admin help message) |
+| /areas  | admin      | \<player name\>                                                | Get player details and owned areas.                                             |
+| /areas  | admin      | flushdata \<player name\>                                      | Reset's specified player's data. This includes owned areas.                     |
+| /areas  | admin      | claim \<player name\>                                          | Claim an area in the name of a player.                                          |
+| /areas  | admin      | friends \<add\|remove\> \<player name\> \<friend name\>        | Add or remove a friend to the area currently standing on.                       |
+| /areas  | admin      | abandon                                                        | Abandon an area the user is standing on no matter the player.                   |
+| /areas  | admin      | reinit \<player name\>                                         | Reset player data. This does not include owned areas.                           |
 
 ## Debug Commands
 | Command | Subcommand | Parameters | Description                                                   |
