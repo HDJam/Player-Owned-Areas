@@ -8,6 +8,8 @@ import { ModSettings } from "./ModSettings";
 import { IAreaData } from "./IDataSave";
 import Message from "language/dictionary/Message";
 import { PlayerData } from "./PlayerData";
+import Translation from "language/Translation";
+import linkSegment from "language/segment/LinkSegment";
 
 export default class Commands {
     /**
@@ -61,6 +63,8 @@ export default class Commands {
     public readonly MsgHelpFriends: Message;
     @Register.message("MsgHelpCount")
     public readonly MsgHelpCount: Message;
+    @Register.message("MsgCmdListLink")
+    public readonly MsgCmdListLink: Message;
 
     /**
      * Initialize log and registry END
@@ -100,13 +104,11 @@ export default class Commands {
                     return;
                 }
 
-                // Depreciated, friends is now per player.
-                // var areaId = Areas.getAreaId(player);
-
-                // if (Areas.IsPlayerAreaOwner(areaId, player) == false) {
-                //     player.messages.type(MessageType.Bad).send(this.REGISTRY.MsgAreaNotOwned);
-                //     return;
-                // }
+                // Print friends list
+                if (method.toLowerCase() == "list") {
+                    PlayerData.PrintFriendList(player);
+                    return;
+                }
 
                 var friendName = cmdArgs[2];
                 if (friendName == undefined || friendName == "") {
@@ -116,16 +118,14 @@ export default class Commands {
                     return;
                 }
 
+                // Add friend
                 if (method.toLowerCase() == "add") {
                     PlayerData.AddFriend(player, friendName);
-                    // Depreciated, friends is now per player.
-                    // Areas.AddAreaFriend(player, friendName, true);
                 }
 
+                // Remove friend
                 if (method.toLowerCase() == "remove") {
                     PlayerData.RemoveFriend(player, friendName);
-                    // Depreciated, friends is now per player.
-                    // Areas.RemoveAreaFriend(player, friendName, true);
                 }
 
                 break;
@@ -380,8 +380,9 @@ export default class Commands {
             default:
                 this.log.debug("No sub-args received, general help")
                 // No args were passed so user passed /areas help
-
                 localPlayer.messages.type(MessageType.Stat).send(this.REGISTRY.MsgHelpGeneral);
+                localPlayer.messages.source().send(Translation.message(this.REGISTRY.MsgCmdListLink)
+                    .withSegments(true, linkSegment));
 
                 // Welcome to Areas help!\n
                 // You may use \"/areas help commands\" to see command list\n

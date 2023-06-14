@@ -34,6 +34,12 @@ export class PlayerData {
     public readonly MsgGetPlayerAreaDetails: Message;
     @Register.message("MsgGetPlayerDetails")
     public readonly MsgGetPlayerDetails: Message;
+    @Register.message("MsgFriendList")
+    public readonly MsgFriendList: Message;
+    @Register.message("MsgFriendListEmpty")
+    public readonly MsgFriendListEmpty: Message;
+
+
     @Register.message("MsgAreaFriendAddSuccess")
     public readonly MsgAreaFriendAddSuccess: Message
     @Register.message("MsgAreaFriendAddFailure")
@@ -46,6 +52,8 @@ export class PlayerData {
     public readonly MsgAreaFriendRemoveFailure: Message
     @Register.message("MsgAreaFriendPreExists")
     public readonly MsgAreaFriendPreExists: Message;
+
+
 
     /**
      * Initialize log and registry END
@@ -98,12 +106,28 @@ export class PlayerData {
         return data.ClaimedAreas;
     }
 
-    public static PrintStoredDataByPlayerName(targetPlayer: Player, player: Player) {
+    public static PrintFriendList(player: Player): void {
         this.log.debug("[PrintStoredDataByPlayerName]");
-        // const data = this.data;
+        const dataMgr = new DataManager;
+        const playerData = dataMgr.GetPlayerDataById(player.identifier);
+
+        if (playerData == undefined) {
+            player.messages.type(MessageType.Bad).send(this.REGISTRY.MsgFriendListEmpty);
+            return;
+        }
+
+        var friendList = "";
+
+        playerData.Friends.filter(element => { return friendList += element + "\n" });
+
+        this.log.debug(friendList);
+        player.messages.type(MessageType.Good).send(this.REGISTRY.MsgFriendList, friendList);
+    }
+
+    public static PrintStoredDataByPlayerName(targetPlayer: Player, player: Player): void {
+        this.log.debug("[PrintStoredDataByPlayerName]");
         const dataMgr = new DataManager;
         const playerData = dataMgr.GetPlayerDataById(targetPlayer.identifier);
-        // const data = dataMgr.GetAllAreaData();
         var playerAreas = Areas.GetAreaDataByPlayerName(targetPlayer.name);
 
         // Output result to admin chat menu
@@ -124,14 +148,13 @@ export class PlayerData {
             player.messages.type(MessageType.Warning).send(this.REGISTRY.MsgGetPlayerAreaDetails, AreaMsgStr);
         }
 
-        /*
-                    Player Details:\n
-                    ID: {0}\n
-                    Name: {1}\n
-                    Claimed Areas: {2}
-                */
+        /*Output:
+            Player Details:\n
+            ID: {0}\n
+            Name: {1}\n
+            Claimed Areas: {2}
+        */
 
-        return;
     }
 
     /**

@@ -389,91 +389,6 @@ export default class Areas {
     }
 
     /**
-    * DEPRECATED (Replaced by PlayerData.AddFriend)
-    * Add a friend to area settings.
-    * @param playerId The player identifier
-    * @param targetPlayerName The target player name
-    * @param forceSet If admin sends debug command, change by force if value is in list.
-    */
-    // public static AddAreaFriend(player: Player, targetPlayerName: string, forceSet: boolean = false) {
-    //     const areaId = Areas.getAreaId(player);
-    //     const dataMgr = new DataManager;
-    //     // Get stored area data
-    //     const areaInfo = dataMgr.GetAreaData(areaId);
-
-    //     // Check if area data exists and belongs to player
-    //     if (this.IsAreaOwned(areaInfo) == false) {
-    //         // Inform user area is not owned by anyone
-    //         player.messages.type(MessageType.Bad).send(this.REGISTRY.MsgAreaNotOwned);
-    //         // Area is not claimed by anyone.
-    //         return;
-    //     }
-
-    //     // Check if area friends already has this user
-    //     if (this.IsFriendInList(areaInfo, targetPlayerName) == true) {
-    //         // Inform user that this area already has this player as a friend
-    //         player.messages.type(MessageType.Bad).send(this.REGISTRY.MsgAreaFriendPreExists, targetPlayerName);
-    //         // Area settings already has {0} specified!
-    //         return;
-    //     }
-
-    //     // Add target player name to friends list
-    //     areaInfo.Settings.friends.push(targetPlayerName.toLowerCase());
-
-    //     // Store area data
-    //     if (dataMgr.SetAreaData(areaInfo)) {
-    //         // Inform user the player was added successfully
-    //         player.messages.type(MessageType.Good).send(this.REGISTRY.MsgAreaFriendAddSuccess, targetPlayerName);
-    //     } else {
-    //         player.messages.type(MessageType.Good).send(this.REGISTRY.MsgAreaFriendAddFailure, targetPlayerName);
-    //     }
-    // }
-
-    /**
-     * DEPRECATED (Replaced by PlayerData.RemoveFriend)
-     * Remove a friend to area settings.
-     * @param playerId The player identifier
-     * @param targetPlayerName The target player name
-     * @param forceSet If admin sends debug command, change by force if value is in list.
-     */
-    // public static RemoveAreaFriend(player: Player, targetPlayerName: string, forceSet: boolean = false) {
-    //     const areaId = Areas.getAreaId(player);
-    //     const dataMgr = new DataManager;
-
-    //     // Get stored area data
-    //     const areaInfo = dataMgr.GetAreaData(areaId);
-
-    //     // Check if area data exists and belongs to player
-    //     if (this.IsAreaOwned(areaInfo) == false) {
-    //         // Inform user area is not owned by anyone
-    //         player.messages.type(MessageType.Bad).send(this.REGISTRY.MsgAreaNotOwned);
-    //         return;
-    //     }
-
-    //     // Check if area friends already has this user
-    //     if (this.IsFriendInList(areaInfo, targetPlayerName) == false) {
-    //         // Inform user that this area already has this player as a friend
-    //         player.messages.type(MessageType.Bad).send(this.REGISTRY.MsgAreaFriendNotInList, targetPlayerName);
-    //         // Area settings already has {0} specified!
-    //         return;
-    //     }
-
-    //     this.log.warn(areaInfo.Settings.friends);
-    //     // Add target player name to friends list
-    //     // areaInfo.Settings.friends = areaInfo.Settings.friends.splice(areaInfo.Settings.friends.indexOf(targetPlayerName) - 1, 1);
-    //     areaInfo.Settings.friends = arr.RemoveStringEntry(targetPlayerName, areaInfo);
-    //     this.log.warn(areaInfo.Settings.friends);
-
-    //     // Store area data
-    //     if (dataMgr.SetAreaData(areaInfo)) {
-    //         // Inform user the player was added successfully
-    //         player.messages.type(MessageType.Good).send(this.REGISTRY.MsgAreaFriendRemoveSuccess, targetPlayerName);
-    //     } else {
-    //         player.messages.type(MessageType.Good).send(this.REGISTRY.MsgAreaFriendRemoveFailure, targetPlayerName);
-    //     }
-    // }
-
-    /**
      * Checks to see if player owns the area.
      * @param areaId The area ID
      * @param player The player for comparison
@@ -502,19 +417,6 @@ export default class Areas {
         return true;
     }
 
-    /**
-     * DEPRECATED (Replaced by PlayerData.IsFriend)
-     * @param areaInfo 
-     * @param targetPlayerName 
-     * @returns 
-     */
-    // public static IsFriendInList(areaInfo: IAreaData, targetPlayerName: string): boolean {
-    //     // Check if area friends already has this user
-    //     if (areaInfo.Settings.friends.includes(targetPlayerName) == true) {
-    //         return true;
-    //     }
-    //     return false;
-    // }
 
     /**
      * Determine if x or y of both tiles are the same area or not. 

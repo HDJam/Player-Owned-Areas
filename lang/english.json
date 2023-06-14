@@ -40,6 +40,9 @@
             "ModPlayerOwnedAreasMsgCmdPlayerMissing": "Enter a valid player name.",
             "ModPlayerOwnedAreasMsgCmdFriendSubCommandMissing": "Enter a sub-command! Syntax: /areas friends <add|remove> <player name>",
             "ModPlayerOwnedAreasMsgAreaCheckIsFriend": "You have permissions in this area.",
+            "ModPlayerOwnedAreasMsgCmdListLink": "Click {LINK(https://github.com/HDJam/Player-Owned-Areas/tree/master)here} to view the full command list!",
+            "ModPlayerOwnedAreasMsgFriendListEmpty": "Unfortunately you have no friends :(.",
+            "ModPlayerOwnedAreasMsgFriendList": "Friends List:\n{0}",
             "ModPlayerOwnedAreas": ""
         },
         "command": {

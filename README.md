@@ -10,7 +10,8 @@ This mod will allow admins to create "safe" zones on maps and allow players to c
 | /areas  | claim      |                                 | Allows player to claim the area they are currently on. Claim command will respond with if successful, error, or if another player already claimed. |
 | /areas  | abandon    |                                 | Allows player to abandon the area they are currently on if owned by the player.                                                                    |
 | /areas  | count      |                                 | Allows the player to see how many areas they claimed vs the maximum allowed on the server. Default maximum is 16.                                  |
-| /areas  | friends    | \<add\|remove\> \<player name\> | Add a friend to the current area.                                                                                                                  |
+| /areas  | friends    | \<add\|remove\> \<player name\> | Add/Remove a friend to the current area.                                                                                                           |
+| /areas  | friends    | list                            | Display list of current friend.                                                                                                                    |
 
 ## Help Commands
 | Command | Subcommand | Parameter | Result               |

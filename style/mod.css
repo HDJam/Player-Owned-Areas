@@ -1,0 +1,5 @@
+/* After beacon's call, this CSS can be removed.
+    Per Chiri in Discord */
+.game-message-turn-group .link {
+    pointer-events: all;
+}

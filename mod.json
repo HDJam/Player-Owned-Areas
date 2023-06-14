@@ -4,8 +4,12 @@
 	"version": "1.0.0",
 	"author": "HDJam",
 	"file": "out/Mod",
+	"multiplayer": "compatible",
 	"languages": [
 		"lang/English"
 	],
-	"waywardVersion": "2.13.1-beta"
+	"waywardVersion": "2.13.1-beta",
+	"stylesheets": [
+		"style/mod"
+	]
 }
