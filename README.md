@@ -1,3 +1,5 @@
+![Player-Owned-Areas](https://raw.githubusercontent.com/HDJam/Player-Owned-Areas/master/mod.png "Player Owned Areas!")
+
 # About 
 This mod will allow admins to create "safe" zones on maps and allow players to create protected land for their bases!
 
