@@ -1,0 +1,16 @@
+{
+	"name": "Player-Owned Areas",
+	"description": "Players may claim land, aka areas, that are protected from other players.",
+	"version": "1.0.0",
+	"author": "HDJam",
+	"file": "out/Mod",
+	"multiplayer": "compatible",
+	"allowUnlockingMilestones": true,
+	"languages": [
+		"lang/English"
+	],
+	"waywardVersion": "2.13.1-beta",
+	"stylesheets": [
+		"style/mod"
+	]
+}
