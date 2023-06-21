@@ -5,6 +5,7 @@
 	"author": "HDJam",
 	"file": "out/Mod",
 	"multiplayer": "compatible",
+	"allowUnlockingMilestones": true,
 	"languages": [
 		"lang/English"
 	],

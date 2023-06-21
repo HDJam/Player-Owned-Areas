@@ -1,6 +1,16 @@
-# AREAS 
+# About 
 This mod will allow admins to create "safe" zones on maps and allow players to create protected land for their bases!
 
+# Settings
+This mod has settings. You may modify the file "Out/ModSettings.js" file and change various options used in the mod.
+
+| Setting                | Description                                              |
+|------------------------|----------------------------------------------------------|
+| MAX_CLAIMED_AREA       | The maximum number of areas a player may own per server. |
+| ADMIN_PLAYERS          | Players that have access to Admin and Debug commands.    |
+| ShowMOTD               | Show the custom Message of the Day on player login.      |
+| MOTD                   | The message that displays to players when they login.    |
+| AreaActionProtection   | The actions that are blocked for protected areas.        |
 
 # Commands
 ## Area Commands
