@@ -71,6 +71,7 @@ import AttachContainer from "game/entity/action/actions/AttachContainer";
 import CloseContainer from "game/entity/action/actions/CloseContainer";
 import Commands from "./Commands";
 import { PlayerData } from "./PlayerData";
+import CommandAction from "./Actions/CommandAction";
 
 
 //import ToggleProtectedItems from "game/entity/action/actions/ToggleProtectedItems";
@@ -124,8 +125,6 @@ export default class Main extends Mod {
     @Register.message("MsgHelpCount")
     public readonly MsgHelpCount: Message;
 
-    // your LogTest instance will be instantiated here. Don't make any more instances of LogTest yourself or it will break
-
     // Register other classes
     @Register.registry(Areas)
     public readonly logAreas: Areas;
@@ -136,6 +135,7 @@ export default class Main extends Mod {
     @Register.registry(PlayerData)
     public readonly logPlayerData: DataManager;
 
+    // Define area protection
     private _AreaProtected: boolean = true;
 
     ////////////////////////////////////
@@ -246,9 +246,16 @@ export default class Main extends Mod {
     // Commands
     //
 
+    /**
+     * Register for command action
+     */
+    @Register.action("CommandAction", CommandAction)
+    public readonly CommandAction: ActionType;
+
     @Register.command("Areas")
     public CmdAreas(_: any, player: Player, args: string) {
-        Commands.CmdAreas(_, player, args);
+        //Commands.CmdAreas(_, player, args);
+        CommandAction.execute(player, player, args);
     }
 
 
@@ -337,7 +344,6 @@ export default class Main extends Mod {
     @InjectObject(Melee, "canUseHandler", InjectionPosition.Pre)
     @InjectObject(PropOpenDoor, "canUseHandler", InjectionPosition.Pre)
     public onCanUseActionToInjectInto(api: IInjectionApi<any, "canUseHandler">, ...args: unknown[]) {
-
         // If in protected area, ignore request
         if (this._AreaProtected == false) {
             return;
@@ -366,9 +372,14 @@ export default class Main extends Mod {
             // log.info(`${ActionType[ActionId]} hidden`)
             api.returnValue = { usable: false }; // set the return of the canUseHandler to the action not being usable
             api.cancelled = true; // prevent normal canuse functionality
+
             return;
         }
     }
+
+
+
+
 
     @Inject(Human, "updateDirection", InjectionPosition.Post)
     public ChangeDirection(api: IInjectionApi<Human<any>, "updateDirection">, tile: Tile, updateVehicleDirection?: boolean | undefined) {
